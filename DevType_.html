@@ -105,19 +105,15 @@
             border-bottom: 2px solid var(--error);
         }
         
-        /* Fehler bei Leerzeichen (muss sichtbar sein) */
         .char.incorrect.space-error {
             display: inline-block;
             min-width: 8px;
         }
 
-        /* Fehler bei Enter (muss Zeilenumbruch behalten!) */
         .char.incorrect.newline-error {
             background: rgba(239, 68, 68, 0.3);
-            /* KEIN display: inline-block hier, sonst geht der Umbruch kaputt */
             position: relative;
         }
-        /* Kleines Enter-Symbol anzeigen */
         .char.incorrect.newline-error::before {
             content: '↵';
             font-size: 0.8em;
@@ -127,7 +123,6 @@
             opacity: 0.7;
         }
 
-        /* Extra Zeichen am Ende */
         .char.extra {
             color: #7f1d1d;
             background: var(--error);
@@ -146,8 +141,12 @@
         /* --- MODALS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 100; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
-        .modal { background: var(--bg-panel); width: 400px; padding: 30px; border-radius: 20px; border: 1px solid var(--border); transform: scale(0.9); transition: 0.3s; text-align: center; }
+        .modal { background: var(--bg-panel); width: 450px; padding: 30px; border-radius: 20px; border: 1px solid var(--border); transform: scale(0.9); transition: 0.3s; text-align: center; }
         .modal-overlay.active .modal { transform: scale(1); }
+        
+        /* Grid for Result Modal */
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+        .result-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; border: 1px solid var(--border); }
         
         .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -243,7 +242,7 @@
     <div class="modal-overlay" id="auth-modal">
         <div class="modal" style="text-align:left;">
             <h2>GitHub Connect</h2>
-            <p style="color:var(--text-muted); font-size: 0.9rem;">Erstelle einen <b>Personal Access Token (Classic)</b> bei GitHub und füge ihn hier ein. Nur lokal gespeichert.</p>
+            <p style="color:var(--text-muted); font-size: 0.9rem;">Erstelle einen <b>Personal Access Token (Classic)</b> bei GitHub und füge ihn hier ein um mit privaten Repos zu spielen. Nur lokal gespeichert.</p>
             <div style="display:flex; gap:10px; margin-top:15px;">
                 <input type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxx" style="flex:1;">
                 <button class="btn btn-primary" onclick="saveToken()">Login</button>
@@ -257,13 +256,23 @@
 
     <div class="modal-overlay" id="result-modal">
         <div class="modal">
-            <div style="color:var(--accent); font-weight:bold;">COMPLETE</div>
+            <div style="color:var(--accent); font-weight:bold; letter-spacing: 2px;">COMPLETE</div>
             <div id="rank-display" style="font-size:2.5rem; font-weight:900; margin:10px 0;">SENIOR DEV</div>
-            <div style="font-size:4rem; font-weight:bold; color:white; margin:10px 0;" id="final-cpm">0</div>
-            <div class="stat-label">CPM</div>
-            <div style="display:flex; gap:10px; justify-content:center; margin-top:30px;">
-                <button class="btn" onclick="initGame()">Nächstes File</button>
-                <button class="btn btn-primary" onclick="generateNewSeed()">Neuer Seed</button>
+            
+            <div class="result-grid">
+                <div class="result-item">
+                    <div style="font-size:3rem; font-weight:bold; color:white;" id="final-cpm">0</div>
+                    <div class="stat-label">CPM</div>
+                </div>
+                <div class="result-item">
+                    <div style="font-size:3rem; font-weight:bold; color:var(--success);" id="final-acc">100%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+                <button class="btn" onclick="initGame()">↺ Replay</button>
+                <button class="btn btn-primary" onclick="generateNewSeed()">Nächstes File ➔</button>
             </div>
         </div>
     </div>
@@ -283,6 +292,10 @@
         const GLOBAL_VALID_EXTENSIONS = ['.cs', '.js', '.jsx', '.ts', '.tsx', '.py', '.go', '.rs', '.java', '.cpp', '.c', '.gd', '.h', '.hpp'];
 
         let currentText = "", startTime = null, timerInterval = null, isPlaying = false, githubToken = localStorage.getItem('devtype_token') || "";
+        
+        // --- ERROR TRACKING ---
+        let totalMistakes = 0;
+        let previousInput = "";
 
         const displayEl = document.getElementById('code-display');
         const inputEl = document.getElementById('input-field');
@@ -356,8 +369,14 @@
             document.getElementById('result-modal').classList.remove('active');
             container.classList.remove('error-shake');
             spinner.style.display = 'block'; btnText.style.display = 'none';
-            inputEl.value = ''; displayEl.innerHTML = ''; document.getElementById('cpm').innerText = '0';
+            inputEl.value = ''; displayEl.innerHTML = ''; 
+            document.getElementById('cpm').innerText = '0';
+            document.getElementById('accuracy').innerText = '100%';
+            
+            // RESET STATS
             isPlaying = false; clearInterval(timerInterval);
+            totalMistakes = 0;
+            previousInput = "";
 
             let seed = seedInput.value.trim() || Math.random().toString(36).substring(2,7);
             seedInput.value = seed;
@@ -429,9 +448,29 @@
             if(displayEl.firstChild) displayEl.firstChild.classList.add('current');
         }
 
-        // --- INPUT & SMART TAB ---
+        // --- INPUT HANDLING ---
         inputEl.addEventListener('input', () => {
             if(!isPlaying && inputEl.value.length === 1) { isPlaying = true; startTime = new Date(); timerInterval = setInterval(()=>{}, 1000); }
+            
+            const currentVal = inputEl.value;
+            
+            // --- MISTAKE TRACKING ---
+            if (currentVal.length < previousInput.length) {
+                // Backspace detected
+                totalMistakes += (previousInput.length - currentVal.length); 
+            } else if (currentVal.length > previousInput.length) {
+                // Char added
+                const addedIndex = previousInput.length;
+                const addedChar = currentVal.substring(addedIndex);
+                const targetChar = currentText.substring(addedIndex, addedIndex + addedChar.length);
+                
+                if (addedChar !== targetChar) {
+                     for(let k=0; k<addedChar.length; k++) {
+                         if(addedChar[k] !== targetChar[k]) totalMistakes++;
+                     }
+                }
+            }
+            previousInput = currentVal;
             updateGame();
         });
 
@@ -442,7 +481,6 @@
                 const expectedChar = currentText[cursorIndex];
                 let textToInsert = '\t';
 
-                // "Smart Tab": Wenn das nächste Zeichen ein Leerzeichen ist, alle Leerzeichen bis zum Wort einfügen
                 if (expectedChar === ' ') {
                     let spaceCount = 0;
                     while(currentText[cursorIndex + spaceCount] === ' ') spaceCount++;
@@ -450,9 +488,11 @@
                 }
 
                 const val = inputEl.value;
-                inputEl.value = val.substring(0, cursorIndex) + textToInsert + val.substring(inputEl.selectionEnd);
+                const newVal = val.substring(0, cursorIndex) + textToInsert + val.substring(inputEl.selectionEnd);
+                inputEl.value = newVal;
                 inputEl.selectionStart = inputEl.selectionEnd = cursorIndex + textToInsert.length;
-                
+                previousInput = newVal; // Sync for stats
+
                 if(!isPlaying) { isPlaying = true; startTime = new Date(); timerInterval = setInterval(()=>{}, 1000); }
                 updateGame();
                 return;
@@ -467,7 +507,7 @@
             const typed = inputEl.value;
             const originalChars = displayEl.querySelectorAll('.char:not(.extra)');
             
-            // Alte Extras entfernen
+            // Cleanup
             const nodes = Array.from(displayEl.childNodes);
             nodes.forEach(node => {
                 if((node.nodeType === 1 && node.classList.contains('extra')) || (node.nodeType === 3 && node.textContent === '\n' && node.previousSibling && node.previousSibling.classList && node.previousSibling.classList.contains('extra'))) {
@@ -475,9 +515,9 @@
                 }
             });
 
-            let errs = 0;
+            let currentVisualErrors = 0;
 
-            // 1. Validierung
+            // 1. Validation
             originalChars.forEach((span, i) => {
                 const char = typed[i];
                 span.className = 'char';
@@ -494,32 +534,27 @@
                 } else {
                     span.classList.add('incorrect');
                     
-                    // Spezielle Fehlerklassen zuweisen
                     if (currentText[i] === '\n') {
-                        // Enter vergessen! Klasse für visuelles Feedback, ABER ohne inline-block
                         span.classList.add('newline-error');
                     } else if (currentText[i] === ' ' || currentText[i] === '\t' || char === ' ' || char === '\t') {
-                        // Leerzeichen Fehler (braucht inline-block damit sichtbar)
                         span.classList.add('space-error');
                     }
-                    errs++;
+                    currentVisualErrors++;
                 }
             });
 
-            // 2. Extra Zeichen am Ende (Wenn User weitertippt)
+            // 2. Extras
             if (typed.length > currentText.length) {
                 const extraCount = typed.length - currentText.length;
                 for(let k=0; k < extraCount; k++) {
                     const idx = currentText.length + k;
                     const char = typed[idx];
                     const s = document.createElement('span');
-                    
                     s.className = 'char extra';
                     
                     if(char === '\n') {
                         s.innerText = '↵'; 
                         displayEl.appendChild(s);
-                        // Echten Umbruch erzwingen
                         displayEl.appendChild(document.createTextNode('\n'));
                     } else {
                         s.innerText = char;
@@ -528,26 +563,33 @@
                         }
                         displayEl.appendChild(s);
                     }
-                    errs++;
+                    currentVisualErrors++;
                 }
                 container.scrollTop = container.scrollHeight;
             }
 
+            // Stats Update
             if(startTime) {
                 const min = (new Date() - startTime) / 60000;
-                const correct = typed.length - errs;
-                document.getElementById('cpm').innerText = Math.round(correct / min) || 0;
-                document.getElementById('accuracy').innerText = Math.round(((typed.length - errs) / typed.length) * 100) + "%";
+                const correctChars = typed.length - currentVisualErrors;
+                document.getElementById('cpm').innerText = Math.round(correctChars / min) || 0;
+                
+                // Real Accuracy Logic
+                const totalKeystrokesEstimated = typed.length + totalMistakes;
+                const acc = totalKeystrokesEstimated === 0 ? 100 : Math.round(((typed.length - currentVisualErrors) / totalKeystrokesEstimated) * 100);
+                document.getElementById('accuracy').innerText = Math.max(0, Math.min(100, acc)) + "%";
             }
 
             if(typed === currentText) endGame();
-            else if(errs > 0) container.classList.add('error-shake');
+            else if(currentVisualErrors > 0) container.classList.add('error-shake');
             else container.classList.remove('error-shake');
         }
 
         function endGame() {
             clearInterval(timerInterval); isPlaying = false; inputEl.blur();
             const cpm = document.getElementById('cpm').innerText;
+            const acc = document.getElementById('accuracy').innerText;
+            
             const val = parseInt(cpm);
             let rank="SCRIPT KIDDIE", color="#a1a1aa";
             if(val > 100) { rank="JUNIOR DEV"; color="#10b981"; }
@@ -557,7 +599,16 @@
 
             const rd = document.getElementById('rank-display');
             rd.innerText = rank; rd.style.color = color;
+            
             document.getElementById('final-cpm').innerText = cpm;
+            document.getElementById('final-acc').innerText = acc; // Show Accuracy in Modal
+            
+            // Color code the accuracy result
+            const accVal = parseInt(acc);
+            const accEl = document.getElementById('final-acc');
+            if(accVal >= 98) accEl.style.color = "#10b981"; // Success
+            else if(accVal >= 90) accEl.style.color = "#f59e0b"; // Warning
+            else accEl.style.color = "#ef4444"; // Error
 
             const oldHs = parseInt(localStorage.getItem('devtype_hs') || 0);
             if(val > oldHs) { localStorage.setItem('devtype_hs', val); document.getElementById('highscore-val').innerText = val; }
