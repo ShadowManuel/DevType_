@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevType // STRICT</title>
+    <title>DevType // PRECISION</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.10.1/tsparticles.confetti.bundle.min.js"></script>
     
@@ -33,47 +33,48 @@
             min-height: 100vh;
             margin: 0;
             overflow: hidden;
-            background-image: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.1), transparent 40%);
+            background-image: radial-gradient(circle at 50% 100%, rgba(139, 92, 246, 0.1), transparent 50%);
         }
 
         /* --- HEADER --- */
         nav {
-            width: 100%; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;
+            width: 100%; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center;
             backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); z-index: 50;
         }
         .logo { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.5rem; letter-spacing: -1px; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .user-profile { display: flex; align-items: center; gap: 12px; background: var(--border); padding: 6px 12px; padding-right: 16px; border-radius: 50px; border: 1px solid var(--border); cursor: pointer; transition: 0.3s; }
         .user-profile:hover { border-color: var(--primary); }
-        .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-dark); object-fit: cover; }
-        .username { font-size: 0.9rem; font-weight: 600; }
+        .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-dark); object-fit: cover; }
+        .username { font-size: 0.85rem; font-weight: 600; }
         .status-dot { width: 8px; height: 8px; background: var(--error); border-radius: 50%; }
         .status-dot.online { background: var(--success); box-shadow: 0 0 5px var(--success); }
 
         /* --- MAIN --- */
-        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 1000px; padding: 20px; gap: 20px; }
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 1100px; padding: 20px; gap: 20px; }
 
         /* --- CONTROLS --- */
         .controls { display: flex; gap: 15px; width: 100%; background: var(--glass); padding: 15px; border-radius: 12px; border: 1px solid var(--border); align-items: center; flex-wrap: wrap; }
-        .input-group { display: flex; gap: 10px; align-items: center; }
+        .input-group { display: flex; gap: 8px; align-items: center; }
+        .divider { width: 1px; height: 30px; background: var(--border); margin: 0 5px; }
         
-        select, input { background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); padding: 10px 15px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; }
+        select, input { background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); padding: 8px 12px; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 0.85rem; outline: none; }
         select:focus, input:focus { border-color: var(--primary); }
         
-        .btn { background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-main); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.2s;}
+        .btn { background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-main); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 0.85rem;}
         .btn:hover { background: #27272a; }
         .btn-primary { background: linear-gradient(135deg, var(--primary), #7c3aed); border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); }
         .btn-primary:hover { transform: translateY(-1px); }
 
         /* --- EDITOR --- */
-        .editor-window { width: 100%; height: 400px; background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border); position: relative; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .editor-window { width: 100%; height: 450px; background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border); position: relative; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .editor-header { background: #27272a; padding: 8px 15px; font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
         
-        /* Repo & Filename Display */
-        .repo-info { margin-left: auto; font-family: 'JetBrains Mono', monospace; display: flex; gap: 10px; }
-        .repo-name { color: var(--accent); font-weight: bold; }
-        .file-path { color: var(--text-muted); opacity: 0.7; max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Repo & Filename Display - Optimiert */
+        .repo-info { margin-left: auto; font-family: 'JetBrains Mono', monospace; display: flex; gap: 10px; overflow: hidden; align-items: center; }
+        .repo-name { color: var(--accent); font-weight: bold; white-space: nowrap; }
+        .file-path { color: var(--text-muted); opacity: 0.9; white-space: nowrap; font-weight: 600; }
 
         .typing-container { flex: 1; position: relative; padding: 25px; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; line-height: 1.6; overflow-y: auto; cursor: text; }
         .typing-container::-webkit-scrollbar { width: 8px; }
@@ -138,10 +139,23 @@
                 </select>
             </div>
             <div class="input-group" id="custom-controls" style="display:none;">
-                <input type="text" id="repo-input" placeholder="user/repo">
+                <input type="text" id="repo-input" placeholder="user/repo" style="width:140px">
             </div>
+
+            <div class="divider"></div>
+
+            <div class="input-group" title="Wähle die Textmenge">
+                <select id="length-select">
+                    <option value="10">Kurz (10 Zeilen)</option>
+                    <option value="25" selected>Mittel (25 Zeilen)</option>
+                    <option value="50">Lang (50 Zeilen)</option>
+                </select>
+            </div>
+
+            <div class="divider"></div>
+
             <div class="input-group" style="margin-left:auto;">
-                <input type="text" id="seed-input" placeholder="Seed (Optional)" style="width: 120px; text-align: center; font-family: monospace;">
+                <input type="text" id="seed-input" placeholder="Seed (Optional)" style="width: 100px; text-align: center; font-family: monospace;">
                 <button class="btn btn-primary" onclick="initGame()">
                     <span id="btn-text">START</span>
                     <div class="spinner" id="loading-spinner"></div>
@@ -204,8 +218,6 @@
     </div>
 
     <script>
-        // --- LANGUAGE CONFIG ---
-        // Hier definieren wir, welche Dateiendungen zu welcher Sprache gehören
         const LANG_CONFIG = {
             csharp: { owner: 'dotnet', repo: 'runtime', extensions: ['.cs'] },
             javascript: { owner: 'facebook', repo: 'react', extensions: ['.js', '.jsx', '.ts', '.tsx'] },
@@ -213,9 +225,7 @@
             go: { owner: 'kubernetes', repo: 'kubernetes', extensions: ['.go'] },
             rust: { owner: 'rust-lang', repo: 'cargo', extensions: ['.rs'] }
         };
-        
-        // Fallback für Custom Mode (erlaubt alles)
-        const GLOBAL_VALID_EXTENSIONS = ['.cs', '.js', '.jsx', '.ts', '.tsx', '.py', '.go', '.rs', '.java', '.cpp', '.c', '.php', '.rb'];
+        const GLOBAL_VALID_EXTENSIONS = ['.cs', '.js', '.jsx', '.ts', '.tsx', '.py', '.go', '.rs', '.java', '.cpp', '.c'];
 
         let currentText = "", startTime = null, timerInterval = null, isPlaying = false, githubToken = localStorage.getItem('devtype_token') || "";
 
@@ -227,6 +237,7 @@
         const seedInput = document.getElementById('seed-input');
         const repoDisplay = document.getElementById('repo-display');
         const fileDisplay = document.getElementById('file-display');
+        const lengthSelect = document.getElementById('length-select');
 
         checkAuth();
         document.getElementById('highscore-val').innerText = localStorage.getItem('devtype_hs') || 0;
@@ -285,6 +296,16 @@
         }
         function generateNewSeed() { seedInput.value = Math.random().toString(36).substring(2, 7); initGame(); }
 
+        // --- HELPER: PATH FORMATTER ---
+        function formatPath(path) {
+            // Schneidet Pfad vorne ab, damit das Ende sichtbar ist
+            const parts = path.split('/');
+            if (parts.length > 3) {
+                return '.../' + parts.slice(-3).join('/');
+            }
+            return path;
+        }
+
         // --- CORE GAME INIT ---
         async function initGame() {
             document.getElementById('result-modal').classList.remove('active');
@@ -293,9 +314,14 @@
             inputEl.value = ''; displayEl.innerHTML = ''; document.getElementById('cpm').innerText = '0';
             isPlaying = false; clearInterval(timerInterval);
 
+            // User Settings
             let seed = seedInput.value.trim();
             if(!seed) { seed = Math.random().toString(36).substring(2,7); seedInput.value = seed; }
-            const rng = mulberry32(cyrb128(seed));
+            // Wir nutzen den Seed für den RNG, der sich durch die Loop verändert
+            let seedValue = cyrb128(seed); // Base Seed
+            
+            // Text Menge
+            const targetLength = parseInt(lengthSelect.value);
 
             const mode = document.getElementById('source-mode').value;
             let owner, repo, allowedExtensions;
@@ -303,51 +329,63 @@
             if (mode === 'preset') {
                 const langKey = document.getElementById('preset-lang').value;
                 const config = LANG_CONFIG[langKey];
-                owner = config.owner;
-                repo = config.repo;
-                allowedExtensions = config.extensions; // HIER IST DIE STRIKTE REGEL
+                owner = config.owner; repo = config.repo; allowedExtensions = config.extensions;
             } else {
                 const val = document.getElementById('repo-input').value;
                 if(!val.includes('/')) { alert("Repo Format: user/repo"); spinner.style.display='none'; btnText.style.display='block'; return; }
                 [owner, repo] = val.split('/');
-                allowedExtensions = GLOBAL_VALID_EXTENSIONS; // Custom Mode erlaubt alles
+                allowedExtensions = GLOBAL_VALID_EXTENSIONS;
             }
 
             try {
                 const headers = githubToken ? { Authorization: `token ${githubToken}` } : {};
                 
-                // Fetch Tree
+                // 1. Fetch Tree
                 const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/HEAD?recursive=1`, { headers });
                 if(!treeRes.ok) throw new Error(treeRes.status === 403 ? "API Limit! Login nötig." : "Repo nicht gefunden");
                 
                 const treeData = await treeRes.json();
-                
-                // FILTER LOGIC: Prüft nun gegen allowedExtensions der gewählten Sprache
                 const files = treeData.tree.filter(n => n.type === 'blob' && allowedExtensions.some(ext => n.path.endsWith(ext)));
+                if(files.length === 0) throw new Error(`Keine Dateien für ${mode === 'preset' ? document.getElementById('preset-lang').value : 'diese Sprache'} gefunden!`);
+
+                // 2. Suche nach geeignetem File (Retry Loop)
+                let attempts = 0;
+                let foundValidCode = false;
                 
-                if(files.length === 0) throw new Error(`Keine Dateien für diese Sprache gefunden!`);
+                while (!foundValidCode && attempts < 10) {
+                    attempts++;
+                    // Wir mutieren den Seed leicht pro Versuch, damit wir eine andere Datei kriegen
+                    const currentRng = mulberry32(seedValue + attempts); 
+                    
+                    const file = files[Math.floor(currentRng() * files.length)];
+                    
+                    // Fetch Content
+                    const fileRes = await fetch(file.url, { headers });
+                    const fileData = await fileRes.json();
+                    const content = new TextDecoder().decode(Uint8Array.from(atob(fileData.content), c => c.charCodeAt(0)));
 
-                // Select File
-                const file = files[Math.floor(rng() * files.length)];
-                
-                // UPDATE HEADER UI
-                repoDisplay.innerText = `${owner}/${repo}`;
-                fileDisplay.innerText = file.path;
-                fileDisplay.title = file.path;
+                    // Extract Snippet mit Längen-Prüfung
+                    const snippet = extractSnippet(content, currentRng, targetLength);
+                    
+                    if (snippet) {
+                        // Success!
+                        foundValidCode = true;
+                        currentText = snippet;
+                        
+                        // UI Update
+                        repoDisplay.innerText = `${owner}/${repo}`;
+                        fileDisplay.innerText = formatPath(file.path);
+                        fileDisplay.title = file.path; // Tooltip hat vollen Pfad
+                        
+                        renderCode();
+                        inputEl.focus();
+                    }
+                    // Wenn snippet null ist (Datei zu kurz), läuft loop weiter
+                }
 
-                // Content
-                const fileRes = await fetch(file.url, { headers });
-                const fileData = await fileRes.json();
-                const content = new TextDecoder().decode(Uint8Array.from(atob(fileData.content), c => c.charCodeAt(0)));
-
-                // Snippet Extraction
-                const lines = content.split('\n').filter(l => l.trim().length > 2 && !l.trim().startsWith('//') && !l.trim().startsWith('import') && !l.trim().startsWith('#'));
-                const safeLines = lines.length < 20 ? lines : lines;
-                const start = Math.floor(rng() * Math.max(0, safeLines.length - 15));
-                currentText = safeLines.slice(start, start + 12).join('\n').substring(0, 500).trim();
-
-                renderCode();
-                inputEl.focus();
+                if (!foundValidCode) {
+                    throw new Error(`Keine Datei mit ${targetLength} Zeilen gefunden (10 Versuche).`);
+                }
 
             } catch(e) {
                 repoDisplay.innerText = "ERROR";
@@ -355,6 +393,29 @@
                 displayEl.innerText = e.message;
             }
             spinner.style.display = 'none'; btnText.style.display = 'block';
+        }
+
+        // --- SNIPPET LOGIC ---
+        function extractSnippet(code, rng, targetLength) {
+            // Bereinigen
+            const lines = code.split('\n').filter(l => l.trim().length > 1 && !l.trim().startsWith('//') && !l.trim().startsWith('#'));
+            
+            // PRÜFUNG: Ist Datei lang genug?
+            if (lines.length < targetLength) {
+                return null; // Signal an die Loop: Such weiter!
+            }
+
+            // Startpunkt wählen
+            const maxStart = Math.max(0, lines.length - targetLength);
+            const start = Math.floor(rng() * maxStart);
+            
+            // Ausschneiden
+            let snippet = lines.slice(start, start + targetLength).join('\n');
+            
+            // Max Zeichen Limit (Sicherheit)
+            if(snippet.length > 3000) snippet = snippet.substring(0, 3000);
+            
+            return snippet.trim();
         }
 
         function renderCode() {
