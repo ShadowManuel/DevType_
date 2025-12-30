@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevType - Perfectionist Mode</title>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.10.1/tsparticles.confetti.bundle.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #1e1e1e;
+            --text-color: #d4d4d4;
+            --accent-color: #007acc;
+            --correct-color: #6a9955;
+            --error-color: #f44747;
+            --cursor-color: #d4d4d4;
+            --container-bg: #252526;
+            --modal-bg: rgba(0, 0, 0, 0.9);
+            
+            /* Ranks */
+            --rank-fail: #f44747; /* Rot für Fail */
+            --rank-junior: #a0a0a0;
+            --rank-mid: #007acc;
+            --rank-senior: #ad00cc;
+            --rank-lead: #ff8c00;
+            --rank-10x: #ff0055;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        h1 { margin-bottom: 20px; font-weight: 300; letter-spacing: 2px; }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            width: 800px;
+            max-width: 90%;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        select, button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: 1px solid #3e3e42;
+            background-color: #3e3e42;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        button:hover { background-color: var(--accent-color); }
+        select:focus { outline: none; border-color: var(--accent-color); }
+
+        .highscore-display {
+            font-size: 0.9rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        /* Container ohne Scrollbars (V4 Basis) */
+        .typing-container {
+            position: relative;
+            width: 800px;
+            max-width: 90%;
+            height: 300px;
+            background-color: var(--container-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            overflow-y: auto;
+            cursor: text;
+            border: 3px solid transparent;
+            
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .typing-container::-webkit-scrollbar { display: none; }
+
+        #code-display {
+            white-space: pre-wrap;
+            word-break: break-all;
+            user-select: none;
+            padding-bottom: 50px;
+        }
+
+        #input-field {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; z-index: 10; cursor: default; resize: none;
+        }
+
+        .char { opacity: 0.5; transition: color 0.1s; }
+        .char.correct { color: var(--correct-color); opacity: 1; }
+        .char.incorrect { color: var(--error-color); background-color: rgba(244, 71, 71, 0.2); opacity: 1; text-decoration: underline; }
+        .char.current { border-left: 2px solid var(--cursor-color); animation: blink 1s infinite; }
+        @keyframes blink { 50% { border-color: transparent; } }
+
+        .stats {
+            display: flex; gap: 30px; margin-top: 20px;
+            font-size: 1.5rem; font-weight: bold;
+        }
+        .stat-box { background: var(--container-bg); padding: 10px 25px; border-radius: 4px; text-align: center; }
+        .stat-label { display: block; font-size: 0.7rem; color: #888; margin-top: 5px; text-transform: uppercase; font-weight: normal;}
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-bg);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100; visibility: hidden; opacity: 0;
+            transition: opacity 0.3s; backdrop-filter: blur(5px);
+        }
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+        
+        .modal-content {
+            background: var(--container-bg); padding: 40px; border-radius: 15px;
+            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            border: 2px solid #444; max-width: 450px; width: 90%;
+            transform: scale(0.9); transition: transform 0.3s;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        
+        .rank-display { font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; text-shadow: 0 0 15px currentColor; }
+        .modal-score { font-size: 5rem; line-height: 1; color: white; margin: 5px 0 20px 0; font-weight: bold; }
+        
+        .status-msg { font-weight: bold; margin-bottom: 15px; font-size: 1.2rem; display: block; }
+        
+        .btn-primary { background-color: var(--accent-color); border: none; font-size: 1.2rem; padding: 12px 35px; color: white; cursor: pointer; border-radius: 50px; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,122,204,0.4); }
+        .btn-primary:hover { transform: scale(1.05); }
+
+        /* Styles für Failure State */
+        .modal-content.failed { border-color: var(--rank-fail); animation: shake 0.5s; }
+        .modal-content.failed .modal-score { color: var(--rank-fail); }
+        
+        /* Rank Styles */
+        .modal-content.rank-senior { border-color: var(--rank-senior); animation: gentle-pulse 2s infinite; }
+        .modal-content.rank-lead { border-color: var(--rank-lead); animation: shake 0.8s; }
+        .modal-content.rank-10x { border-color: var(--rank-10x); animation: intense-shake 0.5s, glow-pulse 1s infinite alternate; }
+
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes gentle-pulse { 50% { box-shadow: 0 20px 60px rgba(173, 0, 204, 0.3); } }
+        @keyframes glow-pulse { to { box-shadow: 0 0 60px var(--rank-10x); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+        @keyframes intense-shake { 25% { transform: translate(-5px, 5px) rotate(-2deg); } 75% { transform: translate(5px, -5px) rotate(2deg); } }
+
+    </style>
+</head>
+<body>
+
+    <h1>DevType <span style="color:var(--accent-color)">100%</span></h1>
+
+    <div class="top-bar">
+        <select id="language-select">
+            <option value="csharp">C#</option>
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="html">HTML/CSS</option>
+            <option value="sql">SQL</option>
+        </select>
+        <div class="highscore-display">Highscore: <span id="highscore-val">0</span> CPM</div>
+    </div>
+
+    <div class="typing-container" id="container" onclick="document.getElementById('input-field').focus()">
+        <div id="code-display"></div>
+        <textarea id="input-field" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+    </div>
+
+    <div class="stats">
+        <div class="stat-box">
+            <span id="cpm">0</span>
+            <span class="stat-label">CPM</span>
+        </div>
+        <div class="stat-box">
+            <span id="accuracy">100%</span>
+            <span class="stat-label">Genauigkeit</span>
+        </div>
+        <div class="stat-box">
+            <span id="timer">0s</span>
+            <span class="stat-label">Zeit</span>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="result-modal">
+        <div class="modal-content" id="modal-content-box">
+            
+            <div id="status-msg" class="status-msg"></div>
+
+            <div class="modal-label" style="color:#aaa; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px;">Resultat</div>
+            <div id="rank-display" class="rank-display"></div>
+            
+            <div class="modal-score" id="final-cpm">0</div>
+            <div class="modal-label" style="color:#aaa;">CPM</div>
+            
+            <p style="color:#888; margin-top:15px; font-size: 1.1rem;">
+                Genauigkeit: <span id="final-acc" style="color:white; font-weight:bold;"></span>
+            </p>
+            
+            <button class="btn-primary" onclick="resetGame()">Nochmal</button>
+        </div>
+    </div>
+
+    <script>
+        const RANKS = [
+            { threshold: 0, name: "Junior Dev", color: "var(--rank-junior)", class: "rank-junior" },
+            { threshold: 150, name: "Mid-Level Dev", color: "var(--rank-mid)", class: "rank-mid" },
+            { threshold: 250, name: "Senior Dev", color: "var(--rank-senior)", class: "rank-senior" },
+            { threshold: 350, name: "Tech Lead", color: "var(--rank-lead)", class: "rank-lead" },
+            { threshold: 450, name: "10x Engineer", color: "var(--rank-10x)", class: "rank-10x" }
+        ];
+
+        const snippets = {
+            csharp: [
+                `using System;\n\npublic class Program {\n    public static void Main() {\n        Console.WriteLine("Perfect Runs Only");\n    }\n}`,
+                `public int Add(int a, int b) => a + b;`
+            ],
+            javascript: [
+                `const isPerfect = (score) => {\n  return score === 100;\n};\nconsole.log(isPerfect(99)); // false`,
+                `document.querySelector('.btn').addEventListener('click', () => {\n  console.log('Clicked');\n});`
+            ],
+            python: [
+                `def check_perfection(accuracy):\n    if accuracy < 100:\n        return False\n    return True`,
+                `data = [1, 2, 3]\nsquared = [x**2 for x in data]\nprint(squared)`
+            ],
+            html: [
+                `<div class="alert alert-danger">\n  <strong>Error!</strong> Accuracy too low.\n</div>`,
+                `<ul>\n  <li>One</li>\n  <li>Two</li>\n</ul>`
+            ],
+            sql: [
+                `SELECT * FROM highscores\nWHERE accuracy = 100\nORDER BY cpm DESC;`,
+                `DELETE FROM results\nWHERE accuracy < 100;`
+            ]
+        };
+
+        const displayEl = document.getElementById('code-display');
+        const inputEl = document.getElementById('input-field');
+        const cpmEl = document.getElementById('cpm');
+        const accEl = document.getElementById('accuracy');
+        const timeEl = document.getElementById('timer');
+        const container = document.getElementById('container');
+        
+        // Modal Elements
+        const modal = document.getElementById('result-modal');
+        const modalContent = document.getElementById('modal-content-box');
+        const statusMsg = document.getElementById('status-msg');
+        const rankDisplay = document.getElementById('rank-display');
+        const finalCpmEl = document.getElementById('final-cpm');
+        const finalAccEl = document.getElementById('final-acc');
+        
+        let currentText = "";
+        let startTime = null;
+        let timerInterval = null;
+        let isPlaying = false;
+        
+        // Highscore Key geändert für 100% Mode
+        let highscore = localStorage.getItem('devtype_highscore_perfect') || 0;
+        document.getElementById('highscore-val').innerText = highscore;
+
+        document.getElementById('language-select').addEventListener('change', initGame);
+
+        inputEl.addEventListener('input', () => {
+            if (!isPlaying && inputEl.value.length === 1) startTimer();
+            updateGame();
+        });
+
+        // Tab Fix aus der vorherigen Diskussion
+        inputEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = inputEl.selectionStart;
+                inputEl.value = inputEl.value.substring(0, start) + "  " + inputEl.value.substring(inputEl.selectionEnd);
+                inputEl.selectionStart = inputEl.selectionEnd = start + 2;
+                updateGame();
+            }
+        });
+
+        function getRank(cpm) {
+            for (let i = RANKS.length - 1; i >= 0; i--) {
+                if (cpm >= RANKS[i].threshold) return RANKS[i];
+            }
+            return RANKS[0];
+        }
+
+        function updateGame() {
+            const typed = inputEl.value;
+            const typedArr = typed.split('');
+            const chars = displayEl.querySelectorAll('.char');
+            let errorCount = 0;
+            let correctCount = 0;
+
+            chars.forEach((span, index) => {
+                const char = typedArr[index];
+                const target = currentText[index];
+                span.className = 'char'; 
+
+                if (char == null) {
+                    if (index === typedArr.length) {
+                        span.classList.add('current');
+                        const containerRect = container.getBoundingClientRect();
+                        const spanRect = span.getBoundingClientRect();
+                        if (spanRect.bottom > containerRect.bottom - 40) container.scrollTop += 30;
+                    }
+                } else if (char === target) {
+                    span.classList.add('correct');
+                    correctCount++;
+                } else {
+                    span.classList.add('incorrect');
+                    errorCount++;
+                }
+            });
+
+            if (startTime) {
+                const diff = (new Date() - startTime) / 1000;
+                const acc = typed.length > 0 ? Math.max(0, 100 - ((errorCount / typed.length) * 100)) : 100;
+                
+                // Live Visual Feedback für Fehler
+                accEl.innerText = Math.round(acc) + "%";
+                accEl.style.color = acc < 100 ? "var(--error-color)" : "var(--text-color)";
+                
+                if(diff > 0) cpmEl.innerText = Math.round(correctCount / (diff/60));
+            }
+
+            if (typed.length >= currentText.length) {
+                if (typed === currentText) endGame(); // 100% Match
+                else endGame(); // Length Reached but errors present
+            }
+        }
+
+        function startTimer() {
+            isPlaying = true;
+            startTime = new Date();
+            timerInterval = setInterval(() => {
+                const diff = Math.floor((new Date() - startTime) / 1000);
+                timeEl.innerText = diff + 's';
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            isPlaying = false;
+            inputEl.blur();
+
+            const timeSeconds = (new Date() - startTime) / 1000;
+            const correctChars = document.querySelectorAll('.char.correct').length;
+            const errorCount = document.querySelectorAll('.char.incorrect').length; // WICHTIG
+            const finalCPM = Math.round(correctChars / (timeSeconds / 60));
+            const finalAcc = Math.round(100 - ((errorCount / currentText.length) * 100));
+
+            // Clean Modal Classes
+            RANKS.forEach(r => modalContent.classList.remove(r.class));
+            modalContent.classList.remove('failed');
+
+            // --- VALIDIERUNGS LOGIK ---
+            if (errorCount > 0 || finalAcc < 100) {
+                // FAIL STATE
+                statusMsg.innerText = "❌ Run abgelehnt!";
+                statusMsg.style.color = "var(--error-color)";
+                
+                rankDisplay.innerText = "UNSAUBER";
+                rankDisplay.style.color = "var(--error-color)";
+                
+                finalAccEl.style.color = "var(--error-color)";
+                modalContent.classList.add('failed');
+                
+                // Kein Highscore Update
+            } else {
+                // SUCCESS STATE
+                const rank = getRank(finalCPM);
+                let isNew = false;
+                
+                if (finalCPM > parseInt(highscore)) {
+                    highscore = finalCPM;
+                    localStorage.setItem('devtype_highscore_perfect', highscore);
+                    document.getElementById('highscore-val').innerText = highscore;
+                    isNew = true;
+                }
+
+                if (isNew) {
+                    statusMsg.innerText = "🏆 Neuer Rekord!";
+                    statusMsg.style.color = "#ffd700";
+                } else {
+                    statusMsg.innerText = "✅ Perfekter Run!";
+                    statusMsg.style.color = "var(--correct-color)";
+                }
+
+                rankDisplay.innerText = rank.name;
+                rankDisplay.style.color = rank.color;
+                finalAccEl.style.color = "var(--correct-color)";
+                modalContent.classList.add(rank.class);
+
+                // Konfetti nur bei Success
+                triggerConfetti(rank);
+            }
+
+            // Common UI Updates
+            finalCpmEl.innerText = finalCPM;
+            finalAccEl.innerText = finalAcc + "%";
+            modal.classList.add('active');
+        }
+
+        function triggerConfetti(rank) {
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 200 };
+            confetti({ ...defaults, particleCount: 100, origin: { y: 0.6 }, colors: [rank.color, '#fff'] });
+        }
+
+        function initGame() {
+            modal.classList.remove('active');
+            const lang = document.getElementById('language-select').value;
+            const list = snippets[lang] || snippets['javascript'];
+            currentText = list[Math.floor(Math.random() * list.length)];
+            
+            displayEl.innerHTML = '';
+            currentText.split('').forEach(char => {
+                const span = document.createElement('span');
+                span.innerText = char;
+                span.className = 'char';
+                displayEl.appendChild(span);
+            });
+            if(displayEl.firstChild) displayEl.firstChild.classList.add('current');
+
+            inputEl.value = '';
+            cpmEl.innerText = '0';
+            accEl.innerText = '100%';
+            accEl.style.color = "var(--text-color)";
+            timeEl.innerText = '0s';
+            isPlaying = false;
+            clearInterval(timerInterval);
+            inputEl.focus();
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
