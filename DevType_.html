@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevType - Perfectionist Mode</title>
+    <title>DevType - Tournament Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.10.1/tsparticles.confetti.bundle.min.js"></script>
     <style>
         :root {
@@ -16,8 +16,6 @@
             --container-bg: #252526;
             --modal-bg: rgba(0, 0, 0, 0.9);
             
-            /* Ranks */
-            --rank-fail: #f44747; /* Rot für Fail */
             --rank-junior: #a0a0a0;
             --rank-mid: #007acc;
             --rank-senior: #ad00cc;
@@ -42,33 +40,67 @@
         
         .top-bar {
             display: flex;
-            justify-content: space-between;
-            width: 800px;
-            max-width: 90%;
+            gap: 15px;
             margin-bottom: 15px;
             align-items: center;
+            width: 800px;
+            max-width: 90%;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
-        select, button {
-            padding: 8px 16px;
+        .controls-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            background: #2d2d2d;
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid #3e3e42;
+        }
+
+        select, button, input {
+            padding: 8px 12px;
             border-radius: 4px;
             border: 1px solid #3e3e42;
             background-color: #3e3e42;
             color: white;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.2s;
+            font-size: 0.9rem;
+            outline: none;
+            font-family: inherit;
         }
-        button:hover { background-color: var(--accent-color); }
-        select:focus { outline: none; border-color: var(--accent-color); }
+
+        input::placeholder { color: #888; font-style: italic; }
+        
+        button { 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            font-weight: bold; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            min-width: 40px;
+        }
+        button:hover { background-color: var(--accent-color); border-color: var(--accent-color); transform: translateY(-1px); }
+        button:active { transform: translateY(1px); }
+
+        #seed-input {
+            width: 100px;
+            text-align: center;
+            letter-spacing: 1px;
+            font-family: monospace;
+            border-color: #555;
+            background-color: #1e1e1e;
+        }
+        #seed-input:focus { border-color: var(--accent-color); }
 
         .highscore-display {
+            margin-left: auto;
             font-size: 0.9rem;
             color: #ffd700;
             font-weight: bold;
         }
 
-        /* Container ohne Scrollbars (V4 Basis) */
         .typing-container {
             position: relative;
             width: 800px;
@@ -84,94 +116,80 @@
             overflow-y: auto;
             cursor: text;
             border: 3px solid transparent;
-            
+            transition: border-color 0.2s;
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
         .typing-container::-webkit-scrollbar { display: none; }
+        
+        .typing-container.error-state { border-color: var(--error-color); animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-        #code-display {
-            white-space: pre-wrap;
-            word-break: break-all;
-            user-select: none;
-            padding-bottom: 50px;
-        }
+        #code-display { white-space: pre-wrap; word-break: break-all; user-select: none; padding-bottom: 50px; }
+        #input-field { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 10; cursor: default; resize: none; }
 
-        #input-field {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; z-index: 10; cursor: default; resize: none;
-        }
-
-        .char { opacity: 0.5; transition: color 0.1s; }
+        .char { opacity: 0.5; }
         .char.correct { color: var(--correct-color); opacity: 1; }
         .char.incorrect { color: var(--error-color); background-color: rgba(244, 71, 71, 0.2); opacity: 1; text-decoration: underline; }
         .char.current { border-left: 2px solid var(--cursor-color); animation: blink 1s infinite; }
         @keyframes blink { 50% { border-color: transparent; } }
 
-        .stats {
-            display: flex; gap: 30px; margin-top: 20px;
-            font-size: 1.5rem; font-weight: bold;
-        }
+        .stats { display: flex; gap: 30px; margin-top: 20px; font-size: 1.5rem; font-weight: bold; }
         .stat-box { background: var(--container-bg); padding: 10px 25px; border-radius: 4px; text-align: center; }
         .stat-label { display: block; font-size: 0.7rem; color: #888; margin-top: 5px; text-transform: uppercase; font-weight: normal;}
 
-        /* Modal */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--modal-bg);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 100; visibility: hidden; opacity: 0;
-            transition: opacity 0.3s; backdrop-filter: blur(5px);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg);
+            display: flex; justify-content: center; align-items: center; z-index: 100;
+            visibility: hidden; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(5px);
         }
         .modal-overlay.active { visibility: visible; opacity: 1; }
-        
         .modal-content {
-            background: var(--container-bg); padding: 40px; border-radius: 15px;
-            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-            border: 2px solid #444; max-width: 450px; width: 90%;
+            background: var(--container-bg); padding: 40px; border-radius: 15px; text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7); border: 2px solid #444; max-width: 450px; width: 90%;
             transform: scale(0.9); transition: transform 0.3s;
         }
         .modal-overlay.active .modal-content { transform: scale(1); }
         
         .rank-display { font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; text-shadow: 0 0 15px currentColor; }
         .modal-score { font-size: 5rem; line-height: 1; color: white; margin: 5px 0 20px 0; font-weight: bold; }
-        
-        .status-msg { font-weight: bold; margin-bottom: 15px; font-size: 1.2rem; display: block; }
-        
-        .btn-primary { background-color: var(--accent-color); border: none; font-size: 1.2rem; padding: 12px 35px; color: white; cursor: pointer; border-radius: 50px; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,122,204,0.4); }
-        .btn-primary:hover { transform: scale(1.05); }
+        .new-record { color: #ffd700; font-weight: bold; margin-bottom:10px; display:none;}
+        .btn-primary { background-color: var(--accent-color); border: none; font-size: 1.2rem; padding: 12px 35px; color: white; cursor: pointer; border-radius: 50px; margin-top: 20px; }
 
-        /* Styles für Failure State */
-        .modal-content.failed { border-color: var(--rank-fail); animation: shake 0.5s; }
-        .modal-content.failed .modal-score { color: var(--rank-fail); }
-        
-        /* Rank Styles */
         .modal-content.rank-senior { border-color: var(--rank-senior); animation: gentle-pulse 2s infinite; }
         .modal-content.rank-lead { border-color: var(--rank-lead); animation: shake 0.8s; }
         .modal-content.rank-10x { border-color: var(--rank-10x); animation: intense-shake 0.5s, glow-pulse 1s infinite alternate; }
 
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         @keyframes gentle-pulse { 50% { box-shadow: 0 20px 60px rgba(173, 0, 204, 0.3); } }
         @keyframes glow-pulse { to { box-shadow: 0 0 60px var(--rank-10x); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
         @keyframes intense-shake { 25% { transform: translate(-5px, 5px) rotate(-2deg); } 75% { transform: translate(5px, -5px) rotate(2deg); } }
-
     </style>
 </head>
 <body>
 
-    <h1>DevType <span style="color:var(--accent-color)">100%</span></h1>
+    <h1>DevType <span style="color:var(--accent-color)">Tournament</span></h1>
 
     <div class="top-bar">
-        <select id="language-select">
-            <option value="csharp">C#</option>
-            <option value="javascript">JavaScript</option>
-            <option value="python">Python</option>
-            <option value="html">HTML/CSS</option>
-            <option value="sql">SQL</option>
-        </select>
-        <div class="highscore-display">Highscore: <span id="highscore-val">0</span> CPM</div>
+        <div class="controls-group">
+            <select id="language-select">
+                <option value="csharp">C#</option>
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="html">HTML/CSS</option>
+                <option value="sql">SQL</option>
+            </select>
+        </div>
+
+        <div class="controls-group">
+            <input type="text" id="seed-input" placeholder="Seed..." maxlength="12">
+            <button onclick="applyManualSeed()" title="Seed anwenden & Starten">▶</button>
+            <button onclick="applyRandomSeed()" title="Zufälliger Seed">🎲</button>
+            <button onclick="restartLevel()" title="Level neu starten">🔄</button>
+        </div>
+
+        <div class="highscore-display">
+            Best: <span id="highscore-val">0</span> CPM
+        </div>
     </div>
 
     <div class="typing-container" id="container" onclick="document.getElementById('input-field').focus()">
@@ -196,24 +214,46 @@
 
     <div class="modal-overlay" id="result-modal">
         <div class="modal-content" id="modal-content-box">
-            
-            <div id="status-msg" class="status-msg"></div>
-
-            <div class="modal-label" style="color:#aaa; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px;">Resultat</div>
-            <div id="rank-display" class="rank-display"></div>
-            
+            <div class="new-record" id="new-record-msg">🏆 Neuer Rekord!</div>
+            <div style="color:#aaa; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px;">Run Complete</div>
+            <div id="rank-display" class="rank-display">Junior Dev</div>
             <div class="modal-score" id="final-cpm">0</div>
-            <div class="modal-label" style="color:#aaa;">CPM</div>
-            
-            <p style="color:#888; margin-top:15px; font-size: 1.1rem;">
-                Genauigkeit: <span id="final-acc" style="color:white; font-weight:bold;"></span>
-            </p>
-            
-            <button class="btn-primary" onclick="resetGame()">Nochmal</button>
+            <div style="color:#aaa;">CPM</div>
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+                <button class="btn-primary" onclick="restartLevel()" style="background:#555">Nochmal</button>
+                <button class="btn-primary" onclick="applyRandomSeed()">Neuer Seed</button>
+            </div>
         </div>
     </div>
 
     <script>
+        // --- PRNG (Pseudo Random Number Generator) ---
+        function cyrb128(str) {
+            let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+            for (let i = 0, k; i < str.length; i++) {
+                k = str.charCodeAt(i);
+                h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+                h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+                h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+                h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+            }
+            h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+            h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+            h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+            h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+            return (h1^h2^h3^h4)>>>0;
+        }
+
+        function mulberry32(a) {
+            return function() {
+              var t = a += 0x6D2B79F5;
+              t = Math.imul(t ^ t >>> 15, t | 1);
+              t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+              return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            }
+        }
+
+        // --- GAME LOGIK ---
         const RANKS = [
             { threshold: 0, name: "Junior Dev", color: "var(--rank-junior)", class: "rank-junior" },
             { threshold: 150, name: "Mid-Level Dev", color: "var(--rank-mid)", class: "rank-mid" },
@@ -224,24 +264,27 @@
 
         const snippets = {
             csharp: [
-                `using System;\n\npublic class Program {\n    public static void Main() {\n        Console.WriteLine("Perfect Runs Only");\n    }\n}`,
-                `public int Add(int a, int b) => a + b;`
+                `using System;\nusing System.Linq;\n\npublic class SeededRun {\n    public static void Main() {\n        var data = Enumerable.Range(0, 10).Select(x => x * x);\n        Console.WriteLine(string.Join(", ", data));\n    }\n}`,
+                `public async Task<string> Fetch(string url) {\n    using var client = new HttpClient();\n    return await client.GetStringAsync(url);\n}`,
+                `public int BinarySearch(int[] arr, int target) {\n    int l = 0, r = arr.Length - 1;\n    while (l <= r) {\n        int m = l + (r - l) / 2;\n        if (arr[m] == target) return m;\n        if (arr[m] < target) l = m + 1;\n        else r = m - 1;\n    }\n    return -1;\n}`
             ],
             javascript: [
-                `const isPerfect = (score) => {\n  return score === 100;\n};\nconsole.log(isPerfect(99)); // false`,
-                `document.querySelector('.btn').addEventListener('click', () => {\n  console.log('Clicked');\n});`
+                `const debounce = (fn, delay) => {\n  let timeoutId;\n  return (...args) => {\n    clearTimeout(timeoutId);\n    timeoutId = setTimeout(() => fn(...args), delay);\n  };\n};`,
+                `// This is a seeded test\nconst calculate = (a, b) => {\n  if (b === 0) throw new Error("Division by zero");\n  return a / b;\n};\nconsole.log(calculate(10, 2));`,
+                `fetch('https://api.dev/users')\n  .then(res => res.json())\n  .then(users => users.map(u => u.name))\n  .catch(console.error);`
             ],
             python: [
-                `def check_perfection(accuracy):\n    if accuracy < 100:\n        return False\n    return True`,
-                `data = [1, 2, 3]\nsquared = [x**2 for x in data]\nprint(squared)`
+                `import asyncio\n\nasync def main():\n    print('Hello')\n    await asyncio.sleep(1)\n    print('world')\n\nasyncio.run(main())`,
+                `def quicksort(arr):\n    if len(arr) <= 1: return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quicksort(left) + middle + quicksort(right)`,
+                `class Vector:\n    def __init__(self, x, y):\n        self.x = x\n        self.y = y\n    def __repr__(self):\n        return f"Vector({self.x}, {self.y})"`
             ],
             html: [
-                `<div class="alert alert-danger">\n  <strong>Error!</strong> Accuracy too low.\n</div>`,
-                `<ul>\n  <li>One</li>\n  <li>Two</li>\n</ul>`
+                `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Seeded Run</title>\n</head>\n<body>\n  <div id="root">Loading...</div>\n</body>\n</html>`,
+                `<form action="/login" method="POST">\n  <label>Email</label>\n  <input type="email" name="email" required>\n  <button type="submit">Login</button>\n</form>`
             ],
             sql: [
-                `SELECT * FROM highscores\nWHERE accuracy = 100\nORDER BY cpm DESC;`,
-                `DELETE FROM results\nWHERE accuracy < 100;`
+                `SELECT u.name, COUNT(o.id) as order_count\nFROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nGROUP BY u.name\nHAVING COUNT(o.id) > 5;`,
+                `CREATE TABLE logs (\n    id INT PRIMARY KEY,\n    message TEXT,\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);`
             ]
         };
 
@@ -251,32 +294,34 @@
         const accEl = document.getElementById('accuracy');
         const timeEl = document.getElementById('timer');
         const container = document.getElementById('container');
-        
-        // Modal Elements
         const modal = document.getElementById('result-modal');
-        const modalContent = document.getElementById('modal-content-box');
-        const statusMsg = document.getElementById('status-msg');
-        const rankDisplay = document.getElementById('rank-display');
-        const finalCpmEl = document.getElementById('final-cpm');
-        const finalAccEl = document.getElementById('final-acc');
+        const rankDisplayEl = document.getElementById('rank-display');
+        const seedInput = document.getElementById('seed-input');
         
         let currentText = "";
+        let currentActiveSeed = ""; // Speichert den aktuell laufenden Seed
         let startTime = null;
         let timerInterval = null;
         let isPlaying = false;
-        
-        // Highscore Key geändert für 100% Mode
-        let highscore = localStorage.getItem('devtype_highscore_perfect') || 0;
+        let highscore = localStorage.getItem('devtype_highscore_tourney') || 0;
         document.getElementById('highscore-val').innerText = highscore;
 
-        document.getElementById('language-select').addEventListener('change', initGame);
+        document.getElementById('language-select').addEventListener('change', () => initGame(currentActiveSeed));
+
+        // Enter Taste im Seed Input
+        seedInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                applyManualSeed();
+                inputEl.focus(); // Fokus direkt aufs Tippfeld
+            }
+        });
 
         inputEl.addEventListener('input', () => {
             if (!isPlaying && inputEl.value.length === 1) startTimer();
             updateGame();
         });
 
-        // Tab Fix aus der vorherigen Diskussion
+        // Smart Tab
         inputEl.addEventListener('keydown', (e) => {
             if (e.key === 'Tab') {
                 e.preventDefault();
@@ -287,24 +332,84 @@
             }
         });
 
-        function getRank(cpm) {
-            for (let i = RANKS.length - 1; i >= 0; i--) {
-                if (cpm >= RANKS[i].threshold) return RANKS[i];
+        function generateRandomSeed() {
+            return Math.random().toString(36).substring(2, 7);
+        }
+
+        // --- BUTTON ACTIONS ---
+
+        // 1. "▶" (Bestätigen)
+        function applyManualSeed() {
+            let seed = seedInput.value.trim();
+            if (!seed) {
+                // Wenn leer, generiere einen
+                seed = generateRandomSeed();
+                seedInput.value = seed;
             }
-            return RANKS[0];
+            initGame(seed);
+        }
+
+        // 2. "🎲" (Zufall)
+        function applyRandomSeed() {
+            const seed = generateRandomSeed();
+            seedInput.value = seed;
+            initGame(seed);
+        }
+
+        // 3. "🔄" (Neustart)
+        function restartLevel() {
+            // Startet mit dem zuletzt aktiven Seed neu
+            initGame(currentActiveSeed);
+        }
+
+        function initGame(seed) {
+            modal.classList.remove('active');
+            container.classList.remove('error-state');
+            
+            currentActiveSeed = seed; // Speichern für Neustart
+            
+            // PRNG initialisieren
+            const seedHash = cyrb128(seed);
+            const rng = mulberry32(seedHash);
+
+            const lang = document.getElementById('language-select').value;
+            const list = snippets[lang] || snippets['javascript'];
+            
+            // Code wählen
+            const randomIndex = Math.floor(rng() * list.length);
+            currentText = list[randomIndex];
+            
+            // UI Reset
+            displayEl.innerHTML = '';
+            currentText.split('').forEach(char => {
+                const span = document.createElement('span');
+                span.innerText = char;
+                span.className = 'char';
+                displayEl.appendChild(span);
+            });
+            if(displayEl.firstChild) displayEl.firstChild.classList.add('current');
+
+            inputEl.value = '';
+            cpmEl.innerText = '0';
+            accEl.innerText = '100%';
+            timeEl.innerText = '0s';
+            isPlaying = false;
+            clearInterval(timerInterval);
+            inputEl.focus();
         }
 
         function updateGame() {
             const typed = inputEl.value;
             const typedArr = typed.split('');
             const chars = displayEl.querySelectorAll('.char');
-            let errorCount = 0;
+            
             let correctCount = 0;
+            let errorCount = 0;
 
             chars.forEach((span, index) => {
                 const char = typedArr[index];
                 const target = currentText[index];
-                span.className = 'char'; 
+                span.className = 'char';
 
                 if (char == null) {
                     if (index === typedArr.length) {
@@ -324,18 +429,19 @@
 
             if (startTime) {
                 const diff = (new Date() - startTime) / 1000;
-                const acc = typed.length > 0 ? Math.max(0, 100 - ((errorCount / typed.length) * 100)) : 100;
-                
-                // Live Visual Feedback für Fehler
-                accEl.innerText = Math.round(acc) + "%";
-                accEl.style.color = acc < 100 ? "var(--error-color)" : "var(--text-color)";
-                
                 if(diff > 0) cpmEl.innerText = Math.round(correctCount / (diff/60));
+                const acc = typed.length > 0 ? Math.max(0, 100 - ((errorCount / typed.length) * 100)) : 100;
+                accEl.innerText = Math.round(acc) + "%";
             }
 
-            if (typed.length >= currentText.length) {
-                if (typed === currentText) endGame(); // 100% Match
-                else endGame(); // Length Reached but errors present
+            // Force 100% check
+            if (typed === currentText) {
+                container.classList.remove('error-state');
+                endGame();
+            } else if (typed.length >= currentText.length) {
+                container.classList.add('error-state');
+            } else {
+                container.classList.remove('error-state');
             }
         }
 
@@ -354,94 +460,40 @@
             inputEl.blur();
 
             const timeSeconds = (new Date() - startTime) / 1000;
-            const correctChars = document.querySelectorAll('.char.correct').length;
-            const errorCount = document.querySelectorAll('.char.incorrect').length; // WICHTIG
-            const finalCPM = Math.round(correctChars / (timeSeconds / 60));
-            const finalAcc = Math.round(100 - ((errorCount / currentText.length) * 100));
+            const finalCPM = Math.round(currentText.length / (timeSeconds / 60));
 
-            // Clean Modal Classes
-            RANKS.forEach(r => modalContent.classList.remove(r.class));
-            modalContent.classList.remove('failed');
-
-            // --- VALIDIERUNGS LOGIK ---
-            if (errorCount > 0 || finalAcc < 100) {
-                // FAIL STATE
-                statusMsg.innerText = "❌ Run abgelehnt!";
-                statusMsg.style.color = "var(--error-color)";
-                
-                rankDisplay.innerText = "UNSAUBER";
-                rankDisplay.style.color = "var(--error-color)";
-                
-                finalAccEl.style.color = "var(--error-color)";
-                modalContent.classList.add('failed');
-                
-                // Kein Highscore Update
-            } else {
-                // SUCCESS STATE
-                const rank = getRank(finalCPM);
-                let isNew = false;
-                
-                if (finalCPM > parseInt(highscore)) {
-                    highscore = finalCPM;
-                    localStorage.setItem('devtype_highscore_perfect', highscore);
-                    document.getElementById('highscore-val').innerText = highscore;
-                    isNew = true;
-                }
-
-                if (isNew) {
-                    statusMsg.innerText = "🏆 Neuer Rekord!";
-                    statusMsg.style.color = "#ffd700";
-                } else {
-                    statusMsg.innerText = "✅ Perfekter Run!";
-                    statusMsg.style.color = "var(--correct-color)";
-                }
-
-                rankDisplay.innerText = rank.name;
-                rankDisplay.style.color = rank.color;
-                finalAccEl.style.color = "var(--correct-color)";
-                modalContent.classList.add(rank.class);
-
-                // Konfetti nur bei Success
-                triggerConfetti(rank);
+            let rank = RANKS[0];
+            for (let i = RANKS.length - 1; i >= 0; i--) {
+                if (finalCPM >= RANKS[i].threshold) { rank = RANKS[i]; break; }
             }
 
-            // Common UI Updates
-            finalCpmEl.innerText = finalCPM;
-            finalAccEl.innerText = finalAcc + "%";
-            modal.classList.add('active');
-        }
+            let isNew = false;
+            if (finalCPM > parseInt(highscore)) {
+                highscore = finalCPM;
+                localStorage.setItem('devtype_highscore_tourney', highscore);
+                document.getElementById('highscore-val').innerText = highscore;
+                isNew = true;
+            }
 
-        function triggerConfetti(rank) {
+            document.getElementById('final-cpm').innerText = finalCPM;
+            document.getElementById('new-record-msg').style.display = isNew ? 'block' : 'none';
+            
+            rankDisplayEl.innerText = rank.name;
+            rankDisplayEl.style.color = rank.color;
+            
+            const modalBox = document.getElementById('modal-content-box');
+            RANKS.forEach(r => modalBox.classList.remove(r.class));
+            modalBox.classList.add(rank.class);
+
+            modal.classList.add('active');
+            
             const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 200 };
             confetti({ ...defaults, particleCount: 100, origin: { y: 0.6 }, colors: [rank.color, '#fff'] });
         }
 
-        function initGame() {
-            modal.classList.remove('active');
-            const lang = document.getElementById('language-select').value;
-            const list = snippets[lang] || snippets['javascript'];
-            currentText = list[Math.floor(Math.random() * list.length)];
-            
-            displayEl.innerHTML = '';
-            currentText.split('').forEach(char => {
-                const span = document.createElement('span');
-                span.innerText = char;
-                span.className = 'char';
-                displayEl.appendChild(span);
-            });
-            if(displayEl.firstChild) displayEl.firstChild.classList.add('current');
+        // Start mit Zufallsseed
+        applyRandomSeed();
 
-            inputEl.value = '';
-            cpmEl.innerText = '0';
-            accEl.innerText = '100%';
-            accEl.style.color = "var(--text-color)";
-            timeEl.innerText = '0s';
-            isPlaying = false;
-            clearInterval(timerInterval);
-            inputEl.focus();
-        }
-
-        initGame();
     </script>
 </body>
 </html>
