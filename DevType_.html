@@ -3,492 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevType - Git Tournament</title>
+    <title>DevType // STRICT</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.10.1/tsparticles.confetti.bundle.min.js"></script>
+    
     <style>
         :root {
-            --bg-color: #0d1117;
-            --text-color: #c9d1d9;
-            --accent-color: #58a6ff;
-            --correct-color: #3fb950;
-            --error-color: #f85149;
-            --cursor-color: #58a6ff;
-            --container-bg: #161b22;
-            --modal-bg: rgba(0, 0, 0, 0.9);
-            
-            --rank-junior: #8b949e;
-            --rank-mid: #58a6ff;
-            --rank-senior: #a371f7;
-            --rank-lead: #f0883e;
-            --rank-10x: #ff7b72;
+            --bg-dark: #09090b;
+            --bg-panel: #18181b;
+            --primary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --error: #ef4444;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --glass: rgba(24, 24, 27, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
             margin: 0;
             overflow: hidden;
+            background-image: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.1), transparent 40%);
         }
 
-        h1 { margin-bottom: 20px; font-weight: 300; letter-spacing: 1px; }
+        /* --- HEADER --- */
+        nav {
+            width: 100%; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); z-index: 50;
+        }
+        .logo { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.5rem; letter-spacing: -1px; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .top-bar {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            align-items: center;
-            width: 850px;
-            max-width: 95%;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+        .user-profile { display: flex; align-items: center; gap: 12px; background: var(--border); padding: 6px 12px; padding-right: 16px; border-radius: 50px; border: 1px solid var(--border); cursor: pointer; transition: 0.3s; }
+        .user-profile:hover { border-color: var(--primary); }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-dark); object-fit: cover; }
+        .username { font-size: 0.9rem; font-weight: 600; }
+        .status-dot { width: 8px; height: 8px; background: var(--error); border-radius: 50%; }
+        .status-dot.online { background: var(--success); box-shadow: 0 0 5px var(--success); }
 
-        .controls-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            background: #21262d;
-            padding: 5px 10px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-        }
+        /* --- MAIN --- */
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 1000px; padding: 20px; gap: 20px; }
 
-        select, button, input {
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            background-color: #0d1117;
-            color: var(--text-color);
-            font-size: 0.9rem;
-            outline: none;
-            font-family: inherit;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        input { cursor: text; text-align: center; font-family: monospace; width: 100px; border-color: #30363d;}
-        input:focus { border-color: var(--accent-color); }
-        input::placeholder { color: #484f58; font-style: italic; }
+        /* --- CONTROLS --- */
+        .controls { display: flex; gap: 15px; width: 100%; background: var(--glass); padding: 15px; border-radius: 12px; border: 1px solid var(--border); align-items: center; flex-wrap: wrap; }
+        .input-group { display: flex; gap: 10px; align-items: center; }
         
-        button:hover { background-color: #30363d; border-color: #8b949e; }
-        button.primary { background-color: #238636; color: white; border-color: rgba(27,31,35,0.15); }
-        button.primary:hover { background-color: #2ea043; }
+        select, input { background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); padding: 10px 15px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; }
+        select:focus, input:focus { border-color: var(--primary); }
+        
+        .btn { background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-main); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.2s;}
+        .btn:hover { background: #27272a; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), #7c3aed); border: none; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); }
+        .btn-primary:hover { transform: translateY(-1px); }
 
-        .source-badge {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-            background: #30363d;
-            color: #8b949e;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-left: 10px;
-        }
-        .source-badge.live { color: #3fb950; border: 1px solid #3fb950; }
+        /* --- EDITOR --- */
+        .editor-window { width: 100%; height: 400px; background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border); position: relative; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .editor-header { background: #27272a; padding: 8px 15px; font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        
+        /* Repo & Filename Display */
+        .repo-info { margin-left: auto; font-family: 'JetBrains Mono', monospace; display: flex; gap: 10px; }
+        .repo-name { color: var(--accent); font-weight: bold; }
+        .file-path { color: var(--text-muted); opacity: 0.7; max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .typing-container {
-            position: relative;
-            width: 800px;
-            max-width: 90%;
-            height: 350px;
-            background-color: var(--container-bg);
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-            font-size: 1rem;
-            line-height: 1.6;
-            overflow-y: auto;
-            cursor: text;
-            transition: border-color 0.2s;
-            scrollbar-width: none;
-        }
-        .typing-container::-webkit-scrollbar { display: none; }
-        .typing-container.error-state { border-color: var(--error-color); animation: shake 0.4s; }
-        .typing-container.loading { opacity: 0.5; pointer-events: none; }
-
+        .typing-container { flex: 1; position: relative; padding: 25px; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; line-height: 1.6; overflow-y: auto; cursor: text; }
+        .typing-container::-webkit-scrollbar { width: 8px; }
+        .typing-container::-webkit-scrollbar-track { background: var(--bg-dark); }
+        .typing-container::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+        .typing-container.error-shake { animation: shake 0.4s; border: 1px solid var(--error); }
+        
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-        #code-display { white-space: pre-wrap; word-break: break-all; user-select: none; padding-bottom: 50px; }
+        #code-display { white-space: pre-wrap; word-break: break-all; user-select: none; padding-bottom: 100px; }
         #input-field { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 10; cursor: default; resize: none; }
 
-        .char { opacity: 0.5; }
-        .char.correct { color: var(--correct-color); opacity: 1; }
-        .char.incorrect { color: var(--text-color); background-color: rgba(248, 81, 73, 0.4); opacity: 1; }
-        .char.current { border-left: 2px solid var(--cursor-color); animation: blink 1s infinite; }
-        @keyframes blink { 50% { border-color: transparent; } }
+        .char { color: #52525b; }
+        .char.correct { color: var(--text-main); text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+        .char.incorrect { color: var(--error); background: rgba(239, 68, 68, 0.1); border-radius: 2px; }
+        .char.current { background: var(--accent); color: var(--bg-dark); animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.7; } }
 
-        .stats { display: flex; gap: 30px; margin-top: 20px; font-size: 1.5rem; font-weight: bold; }
-        .stat-box { background: var(--container-bg); padding: 10px 25px; border-radius: 6px; border: 1px solid #30363d; text-align: center; }
-        .stat-label { display: block; font-size: 0.7rem; color: #8b949e; margin-top: 5px; text-transform: uppercase; font-weight: normal;}
+        /* --- STATS --- */
+        .stats-bar { display: flex; gap: 20px; width: 100%; margin-top: 10px; }
+        .stat-card { flex: 1; background: var(--glass); padding: 15px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
+        .stat-val { font-size: 2rem; font-weight: 800; color: var(--text-main); line-height: 1; }
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-top: 5px; }
 
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg);
-            display: flex; justify-content: center; align-items: center; z-index: 100;
-            visibility: hidden; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(5px);
-        }
-        .modal-overlay.active { visibility: visible; opacity: 1; }
-        .modal-content {
-            background: var(--container-bg); padding: 40px; border-radius: 15px; text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7); border: 2px solid #30363d; max-width: 450px; width: 90%;
-            transform: scale(0.9); transition: transform 0.3s;
-        }
-        .modal-overlay.active .modal-content { transform: scale(1); }
+        /* --- MODALS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 100; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal { background: var(--bg-panel); width: 400px; padding: 30px; border-radius: 20px; border: 1px solid var(--border); transform: scale(0.9); transition: 0.3s; text-align: center; }
+        .modal-overlay.active .modal { transform: scale(1); }
         
-        .rank-display { font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; text-shadow: 0 0 15px currentColor; }
-        .modal-score { font-size: 5rem; line-height: 1; color: white; margin: 5px 0 20px 0; font-weight: bold; }
-        
-        .spinner {
-            display: none;
-            width: 16px; height: 16px; border: 2px solid #30363d; border-top: 2px solid var(--accent-color);
-            border-radius: 50%; animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
     </style>
 </head>
 <body>
 
-    <h1>DevType <span style="color:var(--accent-color)">Git</span></h1>
+    <nav>
+        <div class="logo">DEVTYPE_</div>
+        <div class="user-profile" onclick="openAuthModal()">
+            <div class="status-dot" id="auth-dot"></div>
+            <span class="username" id="auth-name">Connect GitHub</span>
+            <img src="https://github.com/github.png" class="avatar" id="auth-avatar">
+        </div>
+    </nav>
 
-    <div class="top-bar">
-        <div class="controls-group">
-            <select id="language-select">
-                <option value="csharp">C# (.NET)</option>
-                <option value="javascript">JS (React)</option>
-                <option value="python">Python (Django)</option>
-                <option value="go">Go (K8s)</option>
-                <option value="rust">Rust (Cargo)</option>
-            </select>
-            <div id="loading-spinner" class="spinner"></div>
+    <main>
+        <div class="controls">
+            <div class="input-group">
+                <select id="source-mode" onchange="toggleSourceMode()">
+                    <option value="preset">⚡ Quick Play</option>
+                    <option value="custom">🛠 Custom Repo</option>
+                </select>
+            </div>
+            <div class="input-group" id="preset-controls">
+                <select id="preset-lang">
+                    <option value="csharp">C# (.NET)</option>
+                    <option value="javascript">React (JS/TS)</option>
+                    <option value="python">Django (Py)</option>
+                    <option value="go">Kubernetes (Go)</option>
+                    <option value="rust">Cargo (Rust)</option>
+                </select>
+            </div>
+            <div class="input-group" id="custom-controls" style="display:none;">
+                <input type="text" id="repo-input" placeholder="user/repo">
+            </div>
+            <div class="input-group" style="margin-left:auto;">
+                <input type="text" id="seed-input" placeholder="Seed (Optional)" style="width: 120px; text-align: center; font-family: monospace;">
+                <button class="btn btn-primary" onclick="initGame()">
+                    <span id="btn-text">START</span>
+                    <div class="spinner" id="loading-spinner"></div>
+                </button>
+            </div>
         </div>
 
-        <div class="controls-group">
-            <input type="text" id="seed-input" placeholder="Seed" maxlength="12">
-            <button onclick="applyManualSeed()" title="Seed anwenden">▶</button>
-            <button onclick="applyRandomSeed()" title="Zufall">🎲</button>
-            <button onclick="restartLevel()" title="Neustart">🔄</button>
+        <div class="editor-window">
+            <div class="editor-header">
+                <div class="dot" style="background:#ef4444"></div>
+                <div class="dot" style="background:#f59e0b"></div>
+                <div class="dot" style="background:#10b981"></div>
+                
+                <div class="repo-info">
+                    <span class="repo-name" id="repo-display">waiting...</span>
+                    <span style="color:#52525b">/</span>
+                    <span class="file-path" id="file-display">ready</span>
+                </div>
+            </div>
+            
+            <div class="typing-container" id="container" onclick="forceFocus()">
+                <div id="code-display"></div>
+                <textarea id="input-field" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+            </div>
         </div>
 
-        <div id="source-badge" class="source-badge">Offline</div>
-    </div>
-
-    <div class="typing-container" id="container" onclick="document.getElementById('input-field').focus()">
-        <div id="code-display"></div>
-        <textarea id="input-field" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
-    </div>
-
-    <div class="stats">
-        <div class="stat-box">
-            <span id="cpm">0</span>
-            <span class="stat-label">CPM</span>
+        <div class="stats-bar">
+            <div class="stat-card"><div class="stat-val" id="cpm">0</div><div class="stat-label">CPM</div></div>
+            <div class="stat-card"><div class="stat-val" id="accuracy">100%</div><div class="stat-label">Accuracy</div></div>
+            <div class="stat-card"><div class="stat-val" id="highscore-val">0</div><div class="stat-label">Best</div></div>
         </div>
-        <div class="stat-box">
-            <span id="accuracy">100%</span>
-            <span class="stat-label">Genauigkeit</span>
+    </main>
+
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal" style="text-align:left;">
+            <h2>GitHub Connect</h2>
+            <p style="color:var(--text-muted); font-size: 0.9rem;">Erstelle einen <b>Personal Access Token (Classic)</b> bei GitHub und füge ihn hier ein. Nur lokal gespeichert.</p>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <input type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxx" style="flex:1;">
+                <button class="btn btn-primary" onclick="saveToken()">Login</button>
+            </div>
+            <div style="margin-top:15px; font-size:0.8rem;">
+                <a href="#" onclick="logout()" style="color:var(--error);">Logout</a> | 
+                <a href="#" onclick="closeAuthModal()" style="color:var(--text-muted);">Schließen</a>
+            </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="result-modal">
-        <div class="modal-content" id="modal-content-box">
-            <div style="color:#8b949e; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px;">Run Complete</div>
-            <div id="rank-display" class="rank-display">Junior Dev</div>
-            <div class="modal-score" id="final-cpm">0</div>
-            <div style="color:#8b949e;">CPM</div>
-            <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
-                <button class="primary" onclick="restartLevel()">Nochmal</button>
-                <button class="primary" onclick="applyRandomSeed()">Neuer Seed</button>
+        <div class="modal">
+            <div style="color:var(--accent); font-weight:bold;">COMPLETE</div>
+            <div id="rank-display" style="font-size:2.5rem; font-weight:900; margin:10px 0;">SENIOR DEV</div>
+            <div style="font-size:4rem; font-weight:bold; color:white; margin:10px 0;" id="final-cpm">0</div>
+            <div class="stat-label">CPM</div>
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:30px;">
+                <button class="btn" onclick="initGame()">Nächstes File</button>
+                <button class="btn btn-primary" onclick="generateNewSeed()">Neuer Seed</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- SEED SYSTEM (PRNG) ---
-        function cyrb128(str) {
-            let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
-            for (let i = 0, k; i < str.length; i++) {
-                k = str.charCodeAt(i);
-                h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
-                h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
-                h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
-                h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
-            }
-            return (h1^h2^h3^h4)>>>0;
-        }
-
-        function mulberry32(a) {
-            return function() {
-              var t = a += 0x6D2B79F5;
-              t = Math.imul(t ^ t >>> 15, t | 1);
-              t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-              return ((t ^ t >>> 14) >>> 0) / 4294967296;
-            }
-        }
-
-        // --- GITHUB REPOS ---
-        const REPOS = {
-            csharp: { owner: 'dotnet', repo: 'runtime', paths: ['src/libraries/System.Linq/src/System/Linq/Enumerable.cs', 'src/libraries/System.Text.Json/src/System/Text/Json/JsonSerializer.cs'] },
-            javascript: { owner: 'facebook', repo: 'react', paths: ['packages/react/src/ReactHooks.js', 'packages/react-dom/src/client/ReactDOM.js'] },
-            python: { owner: 'django', repo: 'django', paths: ['django/core/handlers/base.py', 'django/db/models/query.py'] },
-            go: { owner: 'kubernetes', repo: 'kubernetes', paths: ['pkg/scheduler/scheduler.go', 'pkg/kubelet/kubelet.go'] },
-            rust: { owner: 'rust-lang', repo: 'cargo', paths: ['src/cargo/core/package.rs', 'src/cargo/util/config/mod.rs'] }
+        // --- LANGUAGE CONFIG ---
+        // Hier definieren wir, welche Dateiendungen zu welcher Sprache gehören
+        const LANG_CONFIG = {
+            csharp: { owner: 'dotnet', repo: 'runtime', extensions: ['.cs'] },
+            javascript: { owner: 'facebook', repo: 'react', extensions: ['.js', '.jsx', '.ts', '.tsx'] },
+            python: { owner: 'django', repo: 'django', extensions: ['.py'] },
+            go: { owner: 'kubernetes', repo: 'kubernetes', extensions: ['.go'] },
+            rust: { owner: 'rust-lang', repo: 'cargo', extensions: ['.rs'] }
         };
+        
+        // Fallback für Custom Mode (erlaubt alles)
+        const GLOBAL_VALID_EXTENSIONS = ['.cs', '.js', '.jsx', '.ts', '.tsx', '.py', '.go', '.rs', '.java', '.cpp', '.c', '.php', '.rb'];
 
-        const FALLBACK_SNIPPETS = {
-            csharp: `public static void Main(string[] args) {\n    Console.WriteLine("GitHub API Limit reached. Using offline mode.");\n}`,
-            javascript: `console.log("GitHub API Limit reached. Using offline mode.");`,
-            python: `print("GitHub API Limit reached. Using offline mode.")`,
-            go: `fmt.Println("GitHub API Limit reached.")`,
-            rust: `println!("GitHub API Limit reached.");`
-        };
+        let currentText = "", startTime = null, timerInterval = null, isPlaying = false, githubToken = localStorage.getItem('devtype_token') || "";
 
-        // DOM
         const displayEl = document.getElementById('code-display');
         const inputEl = document.getElementById('input-field');
-        const cpmEl = document.getElementById('cpm');
-        const accEl = document.getElementById('accuracy');
         const container = document.getElementById('container');
-        const modal = document.getElementById('result-modal');
         const spinner = document.getElementById('loading-spinner');
-        const sourceBadge = document.getElementById('source-badge');
+        const btnText = document.getElementById('btn-text');
         const seedInput = document.getElementById('seed-input');
-        
-        let currentText = "";
-        let currentActiveSeed = "";
-        let startTime = null;
-        let timerInterval = null;
-        let isPlaying = false;
-        
-        document.getElementById('language-select').addEventListener('change', () => initGame(currentActiveSeed));
+        const repoDisplay = document.getElementById('repo-display');
+        const fileDisplay = document.getElementById('file-display');
 
+        checkAuth();
+        document.getElementById('highscore-val').innerText = localStorage.getItem('devtype_hs') || 0;
+
+        function forceFocus() {
+            inputEl.focus();
+            const val = inputEl.value;
+            inputEl.setSelectionRange(val.length, val.length);
+        }
+
+        // --- AUTH ---
+        function openAuthModal() { document.getElementById('auth-modal').classList.add('active'); }
+        function closeAuthModal() { document.getElementById('auth-modal').classList.remove('active'); }
+        async function saveToken() {
+            const token = document.getElementById('pat-input').value.trim();
+            if(!token) return;
+            try {
+                const res = await fetch('https://api.github.com/user', { headers: { Authorization: `token ${token}` } });
+                if(res.ok) {
+                    const user = await res.json();
+                    localStorage.setItem('devtype_token', token);
+                    localStorage.setItem('devtype_user', JSON.stringify(user));
+                    githubToken = token;
+                    checkAuth();
+                    closeAuthModal();
+                    confetti({ particleCount: 50, spread: 70, origin: { y: 0.1 } });
+                } else alert('Token ungültig!');
+            } catch(e) { alert('Verbindungsfehler'); }
+        }
+        function logout() {
+            localStorage.removeItem('devtype_token'); localStorage.removeItem('devtype_user');
+            githubToken = ""; checkAuth(); closeAuthModal();
+        }
+        function checkAuth() {
+            const userStr = localStorage.getItem('devtype_user');
+            if (userStr && githubToken) {
+                const user = JSON.parse(userStr);
+                document.getElementById('auth-name').innerText = user.login;
+                document.getElementById('auth-avatar').src = user.avatar_url;
+                document.getElementById('auth-dot').classList.add('online');
+            } else {
+                document.getElementById('auth-name').innerText = "Connect GitHub";
+                document.getElementById('auth-avatar').src = "https://github.com/github.png";
+                document.getElementById('auth-dot').classList.remove('online');
+            }
+        }
+
+        // --- PRNG ---
+        function cyrb128(str){let h1=1779033703,h2=3144134277,h3=1013904242,h4=2773480762;for(let i=0,k;i<str.length;i++){k=str.charCodeAt(i);h1=h2^Math.imul(h1^k,597399067);h2=h3^Math.imul(h2^k,2869860233);h3=h4^Math.imul(h3^k,951274213);h4=h1^Math.imul(h4^k,2716044179);}return(h1^h2^h3^h4)>>>0;}
+        function mulberry32(a){return function(){var t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;}}
+
+        function toggleSourceMode() {
+            const mode = document.getElementById('source-mode').value;
+            document.getElementById('preset-controls').style.display = mode === 'preset' ? 'flex' : 'none';
+            document.getElementById('custom-controls').style.display = mode === 'custom' ? 'flex' : 'none';
+        }
+        function generateNewSeed() { seedInput.value = Math.random().toString(36).substring(2, 7); initGame(); }
+
+        // --- CORE GAME INIT ---
+        async function initGame() {
+            document.getElementById('result-modal').classList.remove('active');
+            container.classList.remove('error-shake');
+            spinner.style.display = 'block'; btnText.style.display = 'none';
+            inputEl.value = ''; displayEl.innerHTML = ''; document.getElementById('cpm').innerText = '0';
+            isPlaying = false; clearInterval(timerInterval);
+
+            let seed = seedInput.value.trim();
+            if(!seed) { seed = Math.random().toString(36).substring(2,7); seedInput.value = seed; }
+            const rng = mulberry32(cyrb128(seed));
+
+            const mode = document.getElementById('source-mode').value;
+            let owner, repo, allowedExtensions;
+
+            if (mode === 'preset') {
+                const langKey = document.getElementById('preset-lang').value;
+                const config = LANG_CONFIG[langKey];
+                owner = config.owner;
+                repo = config.repo;
+                allowedExtensions = config.extensions; // HIER IST DIE STRIKTE REGEL
+            } else {
+                const val = document.getElementById('repo-input').value;
+                if(!val.includes('/')) { alert("Repo Format: user/repo"); spinner.style.display='none'; btnText.style.display='block'; return; }
+                [owner, repo] = val.split('/');
+                allowedExtensions = GLOBAL_VALID_EXTENSIONS; // Custom Mode erlaubt alles
+            }
+
+            try {
+                const headers = githubToken ? { Authorization: `token ${githubToken}` } : {};
+                
+                // Fetch Tree
+                const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/HEAD?recursive=1`, { headers });
+                if(!treeRes.ok) throw new Error(treeRes.status === 403 ? "API Limit! Login nötig." : "Repo nicht gefunden");
+                
+                const treeData = await treeRes.json();
+                
+                // FILTER LOGIC: Prüft nun gegen allowedExtensions der gewählten Sprache
+                const files = treeData.tree.filter(n => n.type === 'blob' && allowedExtensions.some(ext => n.path.endsWith(ext)));
+                
+                if(files.length === 0) throw new Error(`Keine Dateien für diese Sprache gefunden!`);
+
+                // Select File
+                const file = files[Math.floor(rng() * files.length)];
+                
+                // UPDATE HEADER UI
+                repoDisplay.innerText = `${owner}/${repo}`;
+                fileDisplay.innerText = file.path;
+                fileDisplay.title = file.path;
+
+                // Content
+                const fileRes = await fetch(file.url, { headers });
+                const fileData = await fileRes.json();
+                const content = new TextDecoder().decode(Uint8Array.from(atob(fileData.content), c => c.charCodeAt(0)));
+
+                // Snippet Extraction
+                const lines = content.split('\n').filter(l => l.trim().length > 2 && !l.trim().startsWith('//') && !l.trim().startsWith('import') && !l.trim().startsWith('#'));
+                const safeLines = lines.length < 20 ? lines : lines;
+                const start = Math.floor(rng() * Math.max(0, safeLines.length - 15));
+                currentText = safeLines.slice(start, start + 12).join('\n').substring(0, 500).trim();
+
+                renderCode();
+                inputEl.focus();
+
+            } catch(e) {
+                repoDisplay.innerText = "ERROR";
+                fileDisplay.innerText = "";
+                displayEl.innerText = e.message;
+            }
+            spinner.style.display = 'none'; btnText.style.display = 'block';
+        }
+
+        function renderCode() {
+            displayEl.innerHTML = '';
+            currentText.split('').forEach(char => {
+                const s = document.createElement('span');
+                s.innerText = char; s.className = 'char';
+                displayEl.appendChild(s);
+            });
+            if(displayEl.firstChild) displayEl.firstChild.classList.add('current');
+        }
+
+        // --- GAME ENGINE ---
         inputEl.addEventListener('input', () => {
-            if (!isPlaying && inputEl.value.length === 1) startTimer();
+            if(!isPlaying && inputEl.value.length === 1) { isPlaying = true; startTime = new Date(); timerInterval = setInterval(()=>{}, 1000); }
             updateGame();
         });
 
-        seedInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                applyManualSeed();
-                inputEl.focus();
-            }
-        });
-
         inputEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') {
+            if(e.key === 'Tab') {
                 e.preventDefault();
                 const start = inputEl.selectionStart;
                 inputEl.value = inputEl.value.substring(0, start) + "  " + inputEl.value.substring(inputEl.selectionEnd);
                 inputEl.selectionStart = inputEl.selectionEnd = start + 2;
                 updateGame();
+                return;
+            }
+            if(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) {
+                e.preventDefault();
             }
         });
-
-        // --- SEED CONTROLS ---
-        function generateRandomSeed() { return Math.random().toString(36).substring(2, 7); }
-
-        function applyManualSeed() {
-            let seed = seedInput.value.trim();
-            if (!seed) { seed = generateRandomSeed(); seedInput.value = seed; }
-            initGame(seed);
-        }
-
-        function applyRandomSeed() {
-            const seed = generateRandomSeed();
-            seedInput.value = seed;
-            initGame(seed);
-        }
-
-        function restartLevel() {
-            initGame(currentActiveSeed);
-        }
-
-        // --- FETCHING & PROCESSING WITH SEED ---
         
-        async function fetchCodeFromGitHub(lang, rng) {
-            const config = REPOS[lang];
-            // SEED-BASED SELECTION: Wir nutzen rng(), nicht Math.random()
-            const pathIndex = Math.floor(rng() * config.paths.length);
-            const path = config.paths[pathIndex];
-            const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}`;
-
-            try {
-                // INFO: Fetch selbst ist nicht seedbar (das Netzwerk ist es nicht),
-                // aber die URL, die wir aufrufen, ist jetzt durch den Seed festgelegt.
-                const response = await fetch(url);
-                if (!response.ok) throw new Error("Rate Limit or Error");
-                
-                const data = await response.json();
-                const decoded = atob(data.content);
-                return processCode(decoded, rng); // Wir geben den RNG weiter an den Processor!
-            } catch (err) {
-                console.warn("GitHub fetch failed, using fallback.");
-                return null;
-            }
-        }
-
-        function processCode(fullCode, rng) {
-            const lines = fullCode.split('\n');
-            // Filter
-            const validLines = lines.filter(l => l.trim().length > 0 && !l.trim().startsWith('//') && !l.trim().startsWith('#') && !l.trim().startsWith('*'));
-            
-            if (validLines.length < 20) return fullCode.substring(0, 500);
-
-            // SEED-BASED SLICING: Hier nutzen wir rng() um den Startpunkt zu finden
-            const maxStart = Math.max(0, validLines.length - 20);
-            const start = Math.floor(rng() * maxStart);
-            const end = start + 12; 
-            
-            let snippet = validLines.slice(start, end).join('\n');
-            if(snippet.length > 450) snippet = snippet.substring(0, 450);
-            
-            return snippet.trim();
-        }
-
-        async function initGame(seed) {
-            modal.classList.remove('active');
-            container.classList.remove('error-state');
-            container.classList.add('loading');
-            spinner.style.display = 'block';
-            sourceBadge.innerHTML = 'Fetching...';
-            sourceBadge.className = 'source-badge';
-
-            currentActiveSeed = seed;
-            
-            // PRNG INITIALISIEREN
-            const seedHash = cyrb128(seed);
-            const rng = mulberry32(seedHash);
-
-            inputEl.value = '';
-            displayEl.innerHTML = '';
-            
-            const lang = document.getElementById('language-select').value;
-            
-            // RNG weitergeben!
-            let code = await fetchCodeFromGitHub(lang, rng);
-            
-            if (code) {
-                currentText = code;
-                sourceBadge.innerHTML = `● Live: ${REPOS[lang].repo}`;
-                sourceBadge.classList.add('live');
-            } else {
-                // Fallback (Seed bestimmt hier nichts, da nur 1 Fallback pro Sprache existiert,
-                // könnte man aber erweitern)
-                currentText = FALLBACK_SNIPPETS[lang];
-                sourceBadge.innerHTML = '● Offline Mode';
-                sourceBadge.className = 'source-badge';
-            }
-
-            // Render
-            currentText.split('').forEach(char => {
-                const span = document.createElement('span');
-                span.innerText = char;
-                span.className = 'char';
-                displayEl.appendChild(span);
-            });
-            if(displayEl.firstChild) displayEl.firstChild.classList.add('current');
-
-            container.classList.remove('loading');
-            spinner.style.display = 'none';
-            cpmEl.innerText = '0';
-            accEl.innerText = '100%';
-            isPlaying = false;
-            clearInterval(timerInterval);
-            inputEl.focus();
-        }
+        inputEl.addEventListener('click', forceFocus);
 
         function updateGame() {
             const typed = inputEl.value;
-            const typedArr = typed.split('');
             const chars = displayEl.querySelectorAll('.char');
-            let errorCount = 0;
+            let errs = 0;
 
-            chars.forEach((span, index) => {
-                const char = typedArr[index];
-                const target = currentText[index];
+            chars.forEach((span, i) => {
+                const char = typed[i];
                 span.className = 'char';
-
-                if (char == null) {
-                    if (index === typedArr.length) {
+                if(char == null) {
+                    if(i === typed.length) {
                         span.classList.add('current');
-                        const containerRect = container.getBoundingClientRect();
-                        const spanRect = span.getBoundingClientRect();
-                        if (spanRect.bottom > containerRect.bottom - 40) container.scrollTop += 30;
+                        const r = span.getBoundingClientRect();
+                        const c = container.getBoundingClientRect();
+                        if(r.bottom > c.bottom - 50) container.scrollTop += 30;
                     }
-                } else if (char === target) {
+                } else if(char === currentText[i]) {
                     span.classList.add('correct');
                 } else {
                     span.classList.add('incorrect');
-                    errorCount++;
+                    errs++;
                 }
             });
 
-            if (startTime) {
-                const diff = (new Date() - startTime) / 1000;
-                if(diff > 0) {
-                    const correct = document.querySelectorAll('.char.correct').length;
-                    cpmEl.innerText = Math.round(correct / (diff/60));
-                }
-                const acc = typed.length > 0 ? Math.max(0, 100 - ((errorCount / typed.length) * 100)) : 100;
-                accEl.innerText = Math.round(acc) + "%";
+            if(startTime) {
+                const min = (new Date() - startTime) / 60000;
+                const correct = typed.length - errs;
+                document.getElementById('cpm').innerText = Math.round(correct / min) || 0;
+                document.getElementById('accuracy').innerText = Math.round(((typed.length - errs) / typed.length) * 100) + "%";
             }
 
-            if (typed === currentText) {
-                container.classList.remove('error-state');
-                endGame();
-            } else if (typed.length >= currentText.length) {
-                container.classList.add('error-state');
-            } else {
-                container.classList.remove('error-state');
-            }
-        }
-
-        function startTimer() {
-            isPlaying = true;
-            startTime = new Date();
-            timerInterval = setInterval(() => {}, 1000);
+            if(typed === currentText) endGame();
+            else if(typed.length >= currentText.length) container.classList.add('error-shake');
+            else container.classList.remove('error-shake');
         }
 
         function endGame() {
-            clearInterval(timerInterval);
-            isPlaying = false;
-            inputEl.blur();
+            clearInterval(timerInterval); isPlaying = false; inputEl.blur();
+            const cpm = document.getElementById('cpm').innerText;
+            const val = parseInt(cpm);
+            let rank="SCRIPT KIDDIE", color="#a1a1aa";
+            if(val > 100) { rank="JUNIOR DEV"; color="#10b981"; }
+            if(val > 200) { rank="SENIOR DEV"; color="#06b6d4"; }
+            if(val > 300) { rank="TECH LEAD"; color="#8b5cf6"; }
+            if(val > 400) { rank="10X ENGINEER"; color="#f59e0b"; }
 
-            const timeSeconds = (new Date() - startTime) / 1000;
-            const finalCPM = Math.round(currentText.length / (timeSeconds / 60));
-            
-            document.getElementById('final-cpm').innerText = finalCPM;
-            
-            const rankDisplay = document.getElementById('rank-display');
-            const modalBox = document.getElementById('modal-content-box');
-            let rank = "Junior Dev";
-            let color = "#8b949e";
-            
-            if (finalCPM > 150) { rank = "Mid-Level"; color = "#58a6ff"; }
-            if (finalCPM > 250) { rank = "Senior Dev"; color = "#a371f7"; }
-            if (finalCPM > 350) { rank = "Tech Lead"; color = "#f0883e"; }
-            if (finalCPM > 450) { rank = "10x Engineer"; color = "#ff7b72"; }
-            
-            rankDisplay.innerText = rank;
-            rankDisplay.style.color = color;
-            modalBox.style.borderColor = color;
+            const rd = document.getElementById('rank-display');
+            rd.innerText = rank; rd.style.color = color;
+            document.getElementById('final-cpm').innerText = cpm;
 
-            modal.classList.add('active');
-            
-            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 200 };
-            confetti({ ...defaults, particleCount: 100, origin: { y: 0.6 }, colors: [color, '#fff'] });
+            const oldHs = parseInt(localStorage.getItem('devtype_hs') || 0);
+            if(val > oldHs) { localStorage.setItem('devtype_hs', val); document.getElementById('highscore-val').innerText = val; }
+
+            document.getElementById('result-modal').classList.add('active');
+            confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, colors: [color, '#ffffff'] });
         }
-
-        // Start
-        applyRandomSeed();
-
     </script>
 </body>
 </html>
