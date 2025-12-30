@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevType - Tournament Edition</title>
+    <title>DevType - Big Data Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.10.1/tsparticles.confetti.bundle.min.js"></script>
     <style>
         :root {
@@ -111,7 +111,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 1.2rem;
+            font-size: 1.1rem; /* Etwas kleiner für mehr Code */
             line-height: 1.6;
             overflow-y: auto;
             cursor: text;
@@ -167,7 +167,7 @@
 </head>
 <body>
 
-    <h1>DevType <span style="color:var(--accent-color)">Tournament</span></h1>
+    <h1>DevType <span style="color:var(--accent-color)">BigData</span></h1>
 
     <div class="top-bar">
         <div class="controls-group">
@@ -227,7 +227,7 @@
     </div>
 
     <script>
-        // --- PRNG (Pseudo Random Number Generator) ---
+        // --- PRNG ---
         function cyrb128(str) {
             let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
             for (let i = 0, k; i < str.length; i++) {
@@ -237,10 +237,6 @@
                 h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
                 h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
             }
-            h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
-            h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
-            h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
-            h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
             return (h1^h2^h3^h4)>>>0;
         }
 
@@ -253,38 +249,62 @@
             }
         }
 
-        // --- GAME LOGIK ---
-        const RANKS = [
-            { threshold: 0, name: "Junior Dev", color: "var(--rank-junior)", class: "rank-junior" },
-            { threshold: 150, name: "Mid-Level Dev", color: "var(--rank-mid)", class: "rank-mid" },
-            { threshold: 250, name: "Senior Dev", color: "var(--rank-senior)", class: "rank-senior" },
-            { threshold: 350, name: "Tech Lead", color: "var(--rank-lead)", class: "rank-lead" },
-            { threshold: 450, name: "10x Engineer", color: "var(--rank-10x)", class: "rank-10x" }
-        ];
-
+        // --- REAL WORLD DATASETS ---
+        // Echte Codeschnipsel aus typischen Open Source Projekten
         const snippets = {
             csharp: [
-                `using System;\nusing System.Linq;\n\npublic class SeededRun {\n    public static void Main() {\n        var data = Enumerable.Range(0, 10).Select(x => x * x);\n        Console.WriteLine(string.Join(", ", data));\n    }\n}`,
-                `public async Task<string> Fetch(string url) {\n    using var client = new HttpClient();\n    return await client.GetStringAsync(url);\n}`,
-                `public int BinarySearch(int[] arr, int target) {\n    int l = 0, r = arr.Length - 1;\n    while (l <= r) {\n        int m = l + (r - l) / 2;\n        if (arr[m] == target) return m;\n        if (arr[m] < target) l = m + 1;\n        else r = m - 1;\n    }\n    return -1;\n}`
+                `using System;\nusing System.Linq;\npublic class Program {\n    public static void Main() {\n        var data = Enumerable.Range(1, 10).Where(x => x % 2 == 0);\n        Console.WriteLine(string.Join(", ", data));\n    }\n}`,
+                `public async Task<string> FetchDataAsync(string url) {\n    using (HttpClient client = new HttpClient()) {\n        HttpResponseMessage response = await client.GetAsync(url);\n        response.EnsureSuccessStatusCode();\n        return await response.Content.ReadAsStringAsync();\n    }\n}`,
+                `public int Fibonacci(int n) {\n    if (n <= 1) return n;\n    return Fibonacci(n - 1) + Fibonacci(n - 2);\n}`,
+                `// LINQ Projection\nvar users = db.Users.Select(u => new UserDto {\n    Id = u.Id,\n    Name = u.FirstName + " " + u.LastName,\n    Email = u.Email\n}).ToList();`,
+                `public class Singleton {\n    private static Singleton _instance;\n    private Singleton() {}\n    public static Singleton Instance => _instance ??= new Singleton();\n}`,
+                `// Entity Framework\nusing (var context = new SchoolContext()) {\n    var std = new Student() { FirstName = "Bill" };\n    context.Students.Add(std);\n    context.SaveChanges();\n}`,
+                `public static void BubbleSort(int[] arr) {\n    int temp;\n    for (int j = 0; j <= arr.Length - 2; j++) {\n        for (int i = 0; i <= arr.Length - 2; i++) {\n            if (arr[i] > arr[i + 1]) {\n                temp = arr[i + 1];\n                arr[i + 1] = arr[i];\n                arr[i] = temp;\n            }\n        }\n    }\n}`,
+                `try {\n    int result = SafeDivision(10, 0);\n} catch (DivideByZeroException e) {\n    Console.WriteLine($"Attempted divide by zero. {e.Message}");\n}`,
+                `[HttpGet("{id}")]\npublic async Task<ActionResult<TodoItem>> GetTodoItem(long id) {\n    var todoItem = await _context.TodoItems.FindAsync(id);\n    if (todoItem == null) return NotFound();\n    return todoItem;\n}`,
+                `public delegate void Notify();\npublic class ProcessBusinessLogic {\n    public event Notify ProcessCompleted;\n    public void StartProcess() {\n        // Code here...\n        OnProcessCompleted();\n    }\n}`
             ],
             javascript: [
-                `const debounce = (fn, delay) => {\n  let timeoutId;\n  return (...args) => {\n    clearTimeout(timeoutId);\n    timeoutId = setTimeout(() => fn(...args), delay);\n  };\n};`,
-                `// This is a seeded test\nconst calculate = (a, b) => {\n  if (b === 0) throw new Error("Division by zero");\n  return a / b;\n};\nconsole.log(calculate(10, 2));`,
-                `fetch('https://api.dev/users')\n  .then(res => res.json())\n  .then(users => users.map(u => u.name))\n  .catch(console.error);`
+                `// React useEffect Hook\nuseEffect(() => {\n  const handleResize = () => setWidth(window.innerWidth);\n  window.addEventListener('resize', handleResize);\n  return () => window.removeEventListener('resize', handleResize);\n}, []);`,
+                `const debounce = (func, wait) => {\n  let timeout;\n  return (...args) => {\n    clearTimeout(timeout);\n    timeout = setTimeout(() => func(...args), wait);\n  };\n};`,
+                `// Array Reduce\nconst sum = [1, 2, 3, 4].reduce((accumulator, currentValue) => {\n  return accumulator + currentValue;\n}, 0);`,
+                `// Fetch API\nfetch('https://api.example.com/data')\n  .then(response => response.json())\n  .then(data => console.log(data))\n  .catch(error => console.error('Error:', error));`,
+                `// Deep Clone\nconst deepClone = (obj) => {\n  if (obj === null || typeof obj !== 'object') return obj;\n  const copy = Array.isArray(obj) ? [] : {};\n  for (let key in obj) {\n    if (Object.prototype.hasOwnProperty.call(obj, key)) {\n      copy[key] = deepClone(obj[key]);\n    }\n  }\n  return copy;\n};`,
+                `// Promise.all\nconst promise1 = Promise.resolve(3);\nconst promise2 = 42;\nconst promise3 = new Promise((resolve, reject) => {\n  setTimeout(resolve, 100, 'foo');\n});\nPromise.all([promise1, promise2, promise3]).then((values) => {\n  console.log(values);\n});`,
+                `class Rectangle extends Polygon {\n  constructor(height, width) {\n    super(height, width);\n    this.name = 'Rectangle';\n  }\n  get area() {\n    return this.height * this.width;\n  }\n}`,
+                `// Express.js Route\napp.get('/', (req, res) => {\n  res.send('Hello World!');\n});\napp.listen(port, () => {\n  console.log(\`Example app listening at http://localhost:\${port}\`);\n});`,
+                `// QuickSort Implementation\nfunction quickSort(arr) {\n  if (arr.length <= 1) return arr;\n  const pivot = arr[0];\n  const left = arr.slice(1).filter(x => x < pivot);\n  const right = arr.slice(1).filter(x => x >= pivot);\n  return [...quickSort(left), pivot, ...quickSort(right)];\n}`,
+                `const [count, setCount] = useState(0);\nreturn (\n  <div>\n    <p>You clicked {count} times</p>\n    <button onClick={() => setCount(count + 1)}>Click me</button>\n  </div>\n);`
             ],
             python: [
-                `import asyncio\n\nasync def main():\n    print('Hello')\n    await asyncio.sleep(1)\n    print('world')\n\nasyncio.run(main())`,
-                `def quicksort(arr):\n    if len(arr) <= 1: return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quicksort(left) + middle + quicksort(right)`,
-                `class Vector:\n    def __init__(self, x, y):\n        self.x = x\n        self.y = y\n    def __repr__(self):\n        return f"Vector({self.x}, {self.y})"`
+                `# List Comprehension\nsquares = [x**2 for x in range(10)]\nprint(f"Squares: {squares}")`,
+                `def binary_search(arr, low, high, x):\n    if high >= low:\n        mid = (high + low) // 2\n        if arr[mid] == x:\n            return mid\n        elif arr[mid] > x:\n            return binary_search(arr, low, mid - 1, x)\n        else:\n            return binary_search(arr, mid + 1, high, x)\n    return -1`,
+                `# Flask Route\nfrom flask import Flask\napp = Flask(__name__)\n\n@app.route("/")\ndef hello():\n    return "Hello World!"`,
+                `import json\ndata = {'key': 'value'}\njson_str = json.dumps(data, sort_keys=True, indent=4)\nprint(json_str)`,
+                `# Decorator Pattern\ndef my_decorator(func):\n    def wrapper():\n        print("Something is happening before the function is called.")\n        func()\n        print("Something is happening after the function is called.")\n    return wrapper`,
+                `# Reading a file safely\nwith open("hello.txt", "r") as f:\n    content = f.read()\n    print(content)`,
+                `class Dog:\n    species = "Canis familiaris"\n    def __init__(self, name, age):\n        self.name = name\n        self.age = age\n    def __str__(self):\n        return f"{self.name} is {self.age} years old"`,
+                `# Dictionary Merging (Python 3.9+)\nx = {"key1": "value1 from x", "key2": "value2 from x"}\ny = {"key2": "value2 from y", "key3": "value3 from y"}\nz = x | y`,
+                `# Generator Function\ndef count_up_to(max):\n    count = 1\n    while count <= max:\n        yield count\n        count += 1`,
+                `import pandas as pd\ndf = pd.DataFrame(\n    {\n        "Name": ["Braund, Mr. Owen Harris", "Allen, Mr. William Henry", "Bonnell, Miss. Elizabeth"],\n        "Age": [22, 35, 58],\n        "Sex": ["male", "male", "female"],\n    }\n)`
             ],
             html: [
-                `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Seeded Run</title>\n</head>\n<body>\n  <div id="root">Loading...</div>\n</body>\n</html>`,
-                `<form action="/login" method="POST">\n  <label>Email</label>\n  <input type="email" name="email" required>\n  <button type="submit">Login</button>\n</form>`
+                `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Document</title>\n</head>\n<body>\n  <div id="app"></div>\n</body>\n</html>`,
+                `\n<button type="button" class="btn btn-primary">\n  Notifications <span class="badge badge-light">4</span>\n</button>`,
+                `<form action="/action_page.php">\n  <label for="fname">First name:</label><br>\n  <input type="text" id="fname" name="fname" value="John"><br>\n  <input type="submit" value="Submit">\n</form>`,
+                `<div class="grid-container">\n  <div class="grid-item">1</div>\n  <div class="grid-item">2</div>\n  <div class="grid-item">3</div>\n  <div class="grid-item">4</div>\n</div>`,
+                `<table class="table">\n  <thead>\n    <tr>\n      <th scope="col">#</th>\n      <th scope="col">First</th>\n      <th scope="col">Last</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th scope="row">1</th>\n      <td>Mark</td>\n      <td>Otto</td>\n    </tr>\n  </tbody>\n</table>`,
+                `\n<div style="display: flex; justify-content: center; align-items: center; height: 100vh;">\n  <p>Centered Text</p>\n</div>`
             ],
             sql: [
-                `SELECT u.name, COUNT(o.id) as order_count\nFROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nGROUP BY u.name\nHAVING COUNT(o.id) > 5;`,
-                `CREATE TABLE logs (\n    id INT PRIMARY KEY,\n    message TEXT,\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);`
+                `SELECT Customers.CustomerName, Orders.OrderID\nFROM Customers\nLEFT JOIN Orders ON Customers.CustomerID = Orders.CustomerID\nORDER BY Customers.CustomerName;`,
+                `CREATE TABLE Persons (\n    PersonID int,\n    LastName varchar(255),\n    FirstName varchar(255),\n    Address varchar(255),\n    City varchar(255)\n);`,
+                `INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)\nVALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway');`,
+                `SELECT COUNT(CustomerID), Country\nFROM Customers\nGROUP BY Country\nHAVING COUNT(CustomerID) > 5\nORDER BY COUNT(CustomerID) DESC;`,
+                `UPDATE Customers\nSET ContactName = 'Alfred Schmidt', City = 'Frankfurt'\nWHERE CustomerID = 1;`,
+                `DELETE FROM Customers WHERE CustomerName='Alfreds Futterkiste';`,
+                `SELECT * FROM Products\nWHERE Price BETWEEN 10 AND 20\nAND CategoryID NOT IN (1,2,3);`,
+                `ALTER TABLE Customers\nADD Email varchar(255);`
             ]
         };
 
@@ -299,20 +319,19 @@
         const seedInput = document.getElementById('seed-input');
         
         let currentText = "";
-        let currentActiveSeed = ""; // Speichert den aktuell laufenden Seed
+        let currentActiveSeed = ""; 
         let startTime = null;
         let timerInterval = null;
         let isPlaying = false;
-        let highscore = localStorage.getItem('devtype_highscore_tourney') || 0;
+        let highscore = localStorage.getItem('devtype_highscore_bigdata') || 0;
         document.getElementById('highscore-val').innerText = highscore;
 
         document.getElementById('language-select').addEventListener('change', () => initGame(currentActiveSeed));
 
-        // Enter Taste im Seed Input
         seedInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 applyManualSeed();
-                inputEl.focus(); // Fokus direkt aufs Tippfeld
+                inputEl.focus();
             }
         });
 
@@ -321,7 +340,6 @@
             updateGame();
         });
 
-        // Smart Tab
         inputEl.addEventListener('keydown', (e) => {
             if (e.key === 'Tab') {
                 e.preventDefault();
@@ -336,50 +354,39 @@
             return Math.random().toString(36).substring(2, 7);
         }
 
-        // --- BUTTON ACTIONS ---
-
-        // 1. "▶" (Bestätigen)
         function applyManualSeed() {
             let seed = seedInput.value.trim();
             if (!seed) {
-                // Wenn leer, generiere einen
                 seed = generateRandomSeed();
                 seedInput.value = seed;
             }
             initGame(seed);
         }
 
-        // 2. "🎲" (Zufall)
         function applyRandomSeed() {
             const seed = generateRandomSeed();
             seedInput.value = seed;
             initGame(seed);
         }
 
-        // 3. "🔄" (Neustart)
         function restartLevel() {
-            // Startet mit dem zuletzt aktiven Seed neu
             initGame(currentActiveSeed);
         }
 
         function initGame(seed) {
             modal.classList.remove('active');
             container.classList.remove('error-state');
+            currentActiveSeed = seed; 
             
-            currentActiveSeed = seed; // Speichern für Neustart
-            
-            // PRNG initialisieren
             const seedHash = cyrb128(seed);
             const rng = mulberry32(seedHash);
 
             const lang = document.getElementById('language-select').value;
             const list = snippets[lang] || snippets['javascript'];
             
-            // Code wählen
             const randomIndex = Math.floor(rng() * list.length);
             currentText = list[randomIndex];
             
-            // UI Reset
             displayEl.innerHTML = '';
             currentText.split('').forEach(char => {
                 const span = document.createElement('span');
@@ -434,7 +441,6 @@
                 accEl.innerText = Math.round(acc) + "%";
             }
 
-            // Force 100% check
             if (typed === currentText) {
                 container.classList.remove('error-state');
                 endGame();
@@ -470,7 +476,7 @@
             let isNew = false;
             if (finalCPM > parseInt(highscore)) {
                 highscore = finalCPM;
-                localStorage.setItem('devtype_highscore_tourney', highscore);
+                localStorage.setItem('devtype_highscore_bigdata', highscore);
                 document.getElementById('highscore-val').innerText = highscore;
                 isNew = true;
             }
@@ -491,7 +497,6 @@
             confetti({ ...defaults, particleCount: 100, origin: { y: 0.6 }, colors: [rank.color, '#fff'] });
         }
 
-        // Start mit Zufallsseed
         applyRandomSeed();
 
     </script>
